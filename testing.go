@@ -9,7 +9,7 @@ package snapdb
 
 import "context"
 
-// -------------------------------------------- Public API (Testing Only) --------------------------------------------
+// --------------------------------------------- Types ---------------------------------------------- //
 
 // TestingConfig is a read-only view of the internal config struct, exposed
 // for tests that need to assert what options were applied. Production code
@@ -29,6 +29,34 @@ type TestingConfig struct {
 	GeneratePristine bool
 	Logger           Logger
 }
+
+// ------------------------------------------- Constructor(s) --------------------------------------- //
+
+// NewEnvironmentForTesting constructs an Environment with the minimal fields
+// a driver needs to operate (driver name, testdata dir, sqlite path).
+//
+// If base is non-nil, its other fields (DSN, project root, logger) are
+// inherited; otherwise sensible defaults are used. This is intended for
+// driver-level tests that want to exercise Start/Stop/RestoreDump/Truncate
+// in isolation without invoking the full lifecycle.
+func NewEnvironmentForTesting(base *Environment, driverName Driver, testdataDir, sqlitePath string) *Environment {
+	env := &Environment{
+		driver:      driverName,
+		testdataDir: testdataDir,
+		sqlitePath:  sqlitePath,
+		logger:      NewDefaultLogger(nil),
+	}
+	if base != nil {
+		env.database = base.database
+		env.dsn = base.dsn
+		env.projectRoot = base.projectRoot
+		env.ctx = base.ctx
+		env.engine = base.engine
+	}
+	return env
+}
+
+// -------------------------------------------- Public API ------------------------------------------ //
 
 // ApplyOptionsForTesting builds a TestingConfig from a list of options.
 //
@@ -99,30 +127,6 @@ func ResetForTesting(
 
 	rt := &runtimeState{cfg: cfg, env: env, engine: eng, drv: drv}
 	return resetDatabase(t, rt)
-}
-
-// NewEnvironmentForTesting constructs an Environment with the minimal fields
-// a driver needs to operate (driver name, testdata dir, sqlite path).
-//
-// If base is non-nil, its other fields (DSN, project root, logger) are
-// inherited; otherwise sensible defaults are used. This is intended for
-// driver-level tests that want to exercise Start/Stop/RestoreDump/Truncate
-// in isolation without invoking the full lifecycle.
-func NewEnvironmentForTesting(base *Environment, driverName Driver, testdataDir, sqlitePath string) *Environment {
-	env := &Environment{
-		driver:      driverName,
-		testdataDir: testdataDir,
-		sqlitePath:  sqlitePath,
-		logger:      NewDefaultLogger(nil),
-	}
-	if base != nil {
-		env.database = base.database
-		env.dsn = base.dsn
-		env.projectRoot = base.projectRoot
-		env.ctx = base.ctx
-		env.engine = base.engine
-	}
-	return env
 }
 
 // EnvWithEngineForTesting returns a shallow copy of env with the Engine
