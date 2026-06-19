@@ -23,10 +23,8 @@ Configuration is entirely **functional-options based** — no environment variab
 ## Installation
 
 ```bash
-go get github.com/example/dbtestkit
+go get github.com/seyallius/snapdb
 ```
-
-> **Note:** the module path `github.com/example/dbtestkit` is a placeholder. Fork or rename to your own path before publishing.
 
 ---
 
