@@ -43,6 +43,10 @@ type MinimalTandB interface {
 	Fatalf(format string, args ...any)
 }
 
+// stringish is a constraint that satisfies the string type.
+// It is used to provide a common interface for any string-like types.
+type stringish interface{ ~string }
+
 // -------------------------------------------- Public API ------------------------------------------ //
 
 // Run wires up the test environment and executes the test binary.
@@ -103,9 +107,9 @@ type RunM interface {
 // seeders. Call this at the top of every test that depends on a clean
 // database.
 //
-// testNames is an optional list of human-readable labels (e.g. sub-test
-// names) that will be echoed in the reset banner for log readability.
-func Reset(t MinimalTandB, testNames ...string) error {
+// testNames is an optional list of human-readable string labels (e.g.
+// sub-test names) that will be echoed in the reset banner for log readability.
+func Reset[S stringish](t MinimalTandB, testNames ...S) error {
 	if t != nil {
 		t.Helper()
 	}
@@ -120,7 +124,12 @@ func Reset(t MinimalTandB, testNames ...string) error {
 	resetMu.Lock()
 	defer resetMu.Unlock()
 
-	return resetDatabase(t, runtime, testNames...)
+	testNamesStr := make([]string, 0, len(testNames))
+	for _, tn := range testNames {
+		testNamesStr = append(testNamesStr, string(tn))
+	}
+
+	return resetDatabase(t, runtime, testNamesStr...)
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //
