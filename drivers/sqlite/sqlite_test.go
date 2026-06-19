@@ -219,7 +219,7 @@ func TestSQLiteDriver_Truncate_NoEngine(t *testing.T) {
 	require.Contains(t, err.Error(), "engine")
 }
 
-// TestSQLiteDriver_DriverName verifies that Driver() returns the correct
+// TestSQLiteDriver_DriverName verifies that SQLiteDriver() returns the correct
 // identifier.
 func TestSQLiteDriver_DriverName(t *testing.T) {
 	drv := New()

@@ -13,6 +13,7 @@ type DatabaseDriver interface {
 	GenerateDump(ctx context.Context, env *Environment, dumpPath string) error
 	Truncate(ctx context.Context, env *Environment) error
 	Stop(ctx context.Context, env *Environment) error
+	ResetStrategy() ResetStrategy
 }
 
 // Driver identifies a supported database backend.
@@ -31,6 +32,20 @@ const (
 
 	// DriverSQLite selects an in-process, file-backed SQLite database (no Docker).
 	DriverSQLite Driver = "sqlite"
+)
+
+// ResetStrategy dictates how the database is restored to a pristine state between tests.
+type ResetStrategy int
+
+const (
+	// ResetStrategyRestoreDump uses the driver's RestoreDump method (e.g., piping SQL or copying files).
+	// This is the fastest approach for network databases like MySQL/Postgres.
+	ResetStrategyRestoreDump ResetStrategy = iota
+
+	// ResetStrategyTruncateAndSeed truncates all tables and re-runs the DataInitializer.
+	// This is necessary for in-process databases like SQLite on Windows, where file locks
+	// prevent replacing the database file while connections are open.
+	ResetStrategyTruncateAndSeed
 )
 
 // -------------------------------------------- Public API ------------------------------------------ //

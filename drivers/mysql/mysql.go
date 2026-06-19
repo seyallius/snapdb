@@ -43,8 +43,8 @@ const (
 //go:embed mysql-quickstart-entrypoint.sh
 var quickstartEntrypoint []byte
 
-// Driver implements dbtestkit.DatabaseDriver for MySQL.
-type Driver struct {
+// MySQLDriver implements dbtestkit.DatabaseDriver for MySQL.
+type MySQLDriver struct {
 	container testcontainers.Container
 	cfg       dbtestkit.DatabaseConfig
 }
@@ -60,13 +60,13 @@ type Driver struct {
 //	    ...
 //	)
 func New() dbtestkit.DatabaseDriver {
-	return &Driver{}
+	return &MySQLDriver{}
 }
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
 // Driver returns the dbtestkit.Driver constant this implementation serves.
-func (d *Driver) Driver() dbtestkit.Driver { return dbtestkit.DriverMySQL }
+func (d *MySQLDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverMySQL }
 
 // Start boots the MySQL container and returns the DSN.
 //
@@ -76,7 +76,7 @@ func (d *Driver) Driver() dbtestkit.Driver { return dbtestkit.DriverMySQL }
 //     (skipping initdb's slow first-run sequence)
 //   - no wait strategy — the entrypoint guarantees readiness before exec
 //     returns control
-func (d *Driver) Start(ctx context.Context, env *dbtestkit.Environment) (string, error) {
+func (d *MySQLDriver) Start(ctx context.Context, env *dbtestkit.Environment) (string, error) {
 	cfg := env.DriverConfig()
 	d.cfg = cfg
 
@@ -150,7 +150,7 @@ func (d *Driver) Start(ctx context.Context, env *dbtestkit.Environment) (string,
 
 // RestoreDump pipes the pristine SQL dump into the MySQL CLI client inside
 // the container. This is the fast-path reset (~ms).
-func (d *Driver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *MySQLDriver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("mysql: RestoreDump called before Start")
 	}
@@ -179,7 +179,7 @@ func (d *Driver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, du
 //
 // The dump is generated with --add-drop-table so restores are idempotent and
 // do not require a separate TRUNCATE pass.
-func (d *Driver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *MySQLDriver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("mysql: GenerateDump called before Start")
 	}
@@ -204,12 +204,12 @@ func (d *Driver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, d
 
 // Truncate is a no-op for MySQL — the pristine dump's DROP TABLE IF EXISTS
 // statements make truncation redundant on the fast path.
-func (d *Driver) Truncate(_ context.Context, _ *dbtestkit.Environment) error {
+func (d *MySQLDriver) Truncate(_ context.Context, _ *dbtestkit.Environment) error {
 	return nil
 }
 
 // Stop terminates the container.
-func (d *Driver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
+func (d *MySQLDriver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
 	if d.container == nil {
 		return nil
 	}
@@ -217,6 +217,11 @@ func (d *Driver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
 		return fmt.Errorf("mysql: failed to stop container: %w", err)
 	}
 	return nil
+}
+
+// ResetStrategy returns RestoreDump to utilize the fast-path CLI pipe.
+func (d *MySQLDriver) ResetStrategy() dbtestkit.ResetStrategy {
+	return dbtestkit.ResetStrategyRestoreDump
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //

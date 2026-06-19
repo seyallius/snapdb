@@ -276,6 +276,26 @@ func resetDatabase(_ MinimalTandB, rt *runtimeState, testNames ...string) error 
 	// 3. Restore the pristine state. For MySQL/Postgres this pipes the dump
 	//    back into the container; for SQLite this copies the snapshot file.
 	stepStart = time.Now()
+	switch drv.ResetStrategy() {
+	case ResetStrategyTruncateAndSeed:
+		//note: 🛡️ WINDOWS SAFE PATH: For in-process DBs (SQLite) where file locks prevent
+		// binary snapshot restoration while connections are open.
+		// We truncate tables and re-run the data initializer.
+		if err := drv.Truncate(runtimeEnv.Context(), runtimeEnv); err != nil {
+			return fmt.Errorf("truncate tables: %w", err)
+		}
+		if err := cfg.dataInit(runtimeEnv); err != nil {
+			return fmt.Errorf("data init (reset): %w", err)
+		}
+		logStep(cfg, "Truncate & Re-seed Data (SQLite Path)", stepStart)
+
+	default:
+		// 🚀 FAST PATH: restore the binary snapshot or SQL dump.
+		if err := drv.RestoreDump(runtimeEnv.Context(), runtimeEnv, cfg.pristineDumpPath); err != nil {
+			return fmt.Errorf("restore dump: %w", err)
+		}
+		logStep(cfg, "Restore Pristine State", stepStart)
+	}
 	if err := drv.RestoreDump(runtimeEnv.Context(), runtimeEnv, cfg.pristineDumpPath); err != nil {
 		return fmt.Errorf("restore dump: %w", err)
 	}

@@ -62,6 +62,11 @@ func (m *mockDriver) Stop(_ context.Context, _ *dbtestkit.Environment) error {
 	return nil
 }
 
+// ResetStrategy implements dbtestkit.DatabaseDriver.
+func (m *mockDriver) ResetStrategy() dbtestkit.ResetStrategy {
+	return dbtestkit.ResetStrategyRestoreDump
+}
+
 // ------------------------------------------- Internal Helpers ------------------------------------- //
 
 // record appends a method name to the call log.

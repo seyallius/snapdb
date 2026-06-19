@@ -28,8 +28,8 @@ const (
 	defaultStartupTimeout = 2 * time.Minute
 )
 
-// Driver implements dbtestkit.DatabaseDriver for PostgreSQL.
-type Driver struct {
+// PostgresDriver implements dbtestkit.DatabaseDriver for PostgreSQL.
+type PostgresDriver struct {
 	container testcontainers.Container
 	cfg       dbtestkit.DatabaseConfig
 }
@@ -44,12 +44,12 @@ type Driver struct {
 //	    dbtestkit.WithDriver(postgres.New()),
 //	    ...
 //	)
-func New() dbtestkit.DatabaseDriver { return &Driver{} }
+func New() dbtestkit.DatabaseDriver { return &PostgresDriver{} }
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
 // Driver returns the dbtestkit.Driver constant this implementation serves.
-func (d *Driver) Driver() dbtestkit.Driver { return dbtestkit.DriverPostgres }
+func (d *PostgresDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverPostgres }
 
 // Start boots the Postgres container and returns the DSN.
 //
@@ -58,7 +58,7 @@ func (d *Driver) Driver() dbtestkit.Driver { return dbtestkit.DriverPostgres }
 //   - a wait strategy that polls the postgres CLI until the server responds
 //   - the standard postgres initdb flow (database + user created from
 //     POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD env vars)
-func (d *Driver) Start(ctx context.Context, env *dbtestkit.Environment) (string, error) {
+func (d *PostgresDriver) Start(ctx context.Context, env *dbtestkit.Environment) (string, error) {
 	cfg := env.DriverConfig()
 	d.cfg = cfg
 
@@ -110,7 +110,7 @@ func (d *Driver) Start(ctx context.Context, env *dbtestkit.Environment) (string,
 
 // RestoreDump pipes the pristine SQL dump into psql inside the container.
 // This is the fast-path reset (~ms).
-func (d *Driver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *PostgresDriver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("postgres: RestoreDump called before Start")
 	}
@@ -139,7 +139,7 @@ func (d *Driver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, du
 // Uses --clean --if-exists so the dump contains DROP TABLE IF EXISTS
 // equivalents (DROP ... IF EXISTS), making restores idempotent without
 // requiring a separate TRUNCATE pass.
-func (d *Driver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *PostgresDriver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("postgres: GenerateDump called before Start")
 	}
@@ -164,12 +164,12 @@ func (d *Driver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, d
 
 // Truncate is a no-op for Postgres — the pristine dump's DROP ... IF EXISTS
 // statements make truncation redundant on the fast path.
-func (d *Driver) Truncate(_ context.Context, _ *dbtestkit.Environment) error {
+func (d *PostgresDriver) Truncate(_ context.Context, _ *dbtestkit.Environment) error {
 	return nil
 }
 
 // Stop terminates the container.
-func (d *Driver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
+func (d *PostgresDriver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
 	if d.container == nil {
 		return nil
 	}
@@ -177,6 +177,11 @@ func (d *Driver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
 		return fmt.Errorf("postgres: failed to stop container: %w", err)
 	}
 	return nil
+}
+
+// ResetStrategy returns RestoreDump to utilize the fast-path CLI pipe.
+func (d *PostgresDriver) ResetStrategy() dbtestkit.ResetStrategy {
+	return dbtestkit.ResetStrategyRestoreDump
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //

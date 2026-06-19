@@ -19,8 +19,8 @@ import (
 
 // ---------------------------------- Types, Variables & Constants ---------------------------------- //
 
-// Driver implements dbtestkit.DatabaseDriver for SQLite.
-type Driver struct {
+// SQLiteDriver implements dbtestkit.DatabaseDriver for SQLite.
+type SQLiteDriver struct {
 	dbPath       string
 	pristinePath string
 }
@@ -36,13 +36,13 @@ type Driver struct {
 //	    ...
 //	)
 func New() dbtestkit.DatabaseDriver {
-	return &Driver{}
+	return &SQLiteDriver{}
 }
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
 // Driver returns the dbtestkit.Driver constant this implementation serves.
-func (d *Driver) Driver() dbtestkit.Driver { return dbtestkit.DriverSQLite }
+func (d *SQLiteDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverSQLite }
 
 // Start ensures the SQLite database file does not exist (fresh start) and
 // returns its file:// DSN.
@@ -50,7 +50,7 @@ func (d *Driver) Driver() dbtestkit.Driver { return dbtestkit.DriverSQLite }
 // The actual schema + data initialization is performed by the dbtestkit
 // core via the user's WithSchemaInitializer and WithDataInitializer
 // callbacks — Start only prepares the filesystem.
-func (d *Driver) Start(_ context.Context, env *dbtestkit.Environment) (string, error) {
+func (d *SQLiteDriver) Start(_ context.Context, env *dbtestkit.Environment) (string, error) {
 	d.dbPath = env.SQLitePath()
 	d.pristinePath = env.TestdataDir() + "/sqlite-pristine.snapshot"
 
@@ -73,7 +73,7 @@ func (d *Driver) Start(_ context.Context, env *dbtestkit.Environment) (string, e
 // For SQLite, the "dump path" passed in is treated as a binary snapshot
 // file path rather than a SQL text dump. This is dramatically faster than
 // re-running .dump output through the CLI.
-func (d *Driver) RestoreDump(_ context.Context, _ *dbtestkit.Environment, dumpPath string) error {
+func (d *SQLiteDriver) RestoreDump(_ context.Context, _ *dbtestkit.Environment, dumpPath string) error {
 	if _, err := os.Stat(dumpPath); err != nil {
 		return fmt.Errorf("sqlite: pristine snapshot missing at %s: %w", dumpPath, err)
 	}
@@ -94,7 +94,7 @@ func (d *Driver) RestoreDump(_ context.Context, _ *dbtestkit.Environment, dumpPa
 
 // GenerateDump snapshots the current working database file as the pristine
 // copy. Called once during the slow-path setup.
-func (d *Driver) GenerateDump(_ context.Context, _ *dbtestkit.Environment, dumpPath string) error {
+func (d *SQLiteDriver) GenerateDump(_ context.Context, _ *dbtestkit.Environment, dumpPath string) error {
 	if _, err := os.Stat(d.dbPath); err != nil {
 		return fmt.Errorf("sqlite: working db file missing at %s: %w", d.dbPath, err)
 	}
@@ -109,7 +109,7 @@ func (d *Driver) GenerateDump(_ context.Context, _ *dbtestkit.Environment, dumpP
 //
 // SQLite does not support TRUNCATE TABLE — we use DELETE, which is slower
 // than the snapshot restore but works without a pre-baked snapshot.
-func (d *Driver) Truncate(_ context.Context, env *dbtestkit.Environment) error {
+func (d *SQLiteDriver) Truncate(_ context.Context, env *dbtestkit.Environment) error {
 	engine := env.Engine()
 	if engine == nil {
 		return fmt.Errorf("sqlite: Truncate called before engine init")
@@ -145,7 +145,7 @@ func (d *Driver) Truncate(_ context.Context, env *dbtestkit.Environment) error {
 }
 
 // Stop removes the working database file.
-func (d *Driver) Stop(_ context.Context, _ *dbtestkit.Environment) error {
+func (d *SQLiteDriver) Stop(_ context.Context, _ *dbtestkit.Environment) error {
 	if d.dbPath == "" {
 		return nil
 	}
@@ -153,6 +153,12 @@ func (d *Driver) Stop(_ context.Context, _ *dbtestkit.Environment) error {
 		return fmt.Errorf("sqlite: failed to remove db file: %w", err)
 	}
 	return nil
+}
+
+// ResetStrategy returns TruncateAndSeed to avoid Windows file-locking issues
+// when trying to replace the SQLite file while Xorm holds open connections.
+func (d *SQLiteDriver) ResetStrategy() dbtestkit.ResetStrategy {
+	return dbtestkit.ResetStrategyTruncateAndSeed
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //
