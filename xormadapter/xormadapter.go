@@ -59,12 +59,12 @@ func (a *Adapter) Engine() *xorm.Engine { return a.eng }
 
 // Exec implements dbtestkit.Engine.
 func (a *Adapter) Exec(query string, args ...any) (sql.Result, error) {
-	return a.eng.Exec(query, args)
+	return a.eng.Exec(a.prependQuery(query, args)...)
 }
 
 // QueryString implements dbtestkit.Engine.
 func (a *Adapter) QueryString(query string, args ...any) ([]map[string]string, error) {
-	return a.eng.QueryString(query, args)
+	return a.eng.QueryString(a.prependQuery(query, args)...)
 }
 
 // Ping implements dbtestkit.Engine.
@@ -77,3 +77,15 @@ func (a *Adapter) Close() error { return a.eng.Close() }
 // which flushes the ORM-level Ristretto store. Safe to call even if caching
 // is disabled (ClearCache is a no-op in that case).
 func (a *Adapter) ClearCache() error { return a.eng.ClearCache() }
+
+// ------------------------------------------- Internal Helpers ------------------------------------- //
+
+// prependQuery prepends the query string to the args slice.
+func (a *Adapter) prependQuery(query string, args []any) []any {
+	sqlOrArgs := make([]any, 0, len(args)+1)
+	sqlOrArgs = append(sqlOrArgs, query)
+	for _, arg := range args {
+		sqlOrArgs = append(sqlOrArgs, arg)
+	}
+	return sqlOrArgs
+}
