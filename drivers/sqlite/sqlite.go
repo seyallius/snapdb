@@ -132,13 +132,13 @@ func (d *SQLiteDriver) Truncate(_ context.Context, env *dbtestkit.Environment) e
 	for _, row := range rows {
 		for _, name := range row {
 			stmt := fmt.Sprintf("DELETE FROM `%s`", name)
-			if _, err := engine.Exec(stmt); err != nil {
+			if _, err = engine.Exec(stmt); err != nil {
 				return fmt.Errorf("sqlite: failed to truncate with [%s]: %w", stmt, err)
 			}
 		}
 	}
 
-	if _, err := engine.Exec("PRAGMA foreign_keys = ON"); err != nil {
+	if _, err = engine.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		return fmt.Errorf("sqlite: failed to re-enable foreign keys: %w", err)
 	}
 	return nil
