@@ -22,25 +22,25 @@ func TestLifecycle_SlowPath(t *testing.T) {
 
 	var schemaCalled, dataCalled bool
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error {
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error {
 			schemaCalled = true
 			return nil
 		}),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error {
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error {
 			dataCalled = true
 			return nil
 		}),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(filepath.Join(tmp, "nonexistent.sql")),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(filepath.Join(tmp, "nonexistent.sql")),
 	}
 
-	_, _, _, err := dbtestkit.SetupForTesting(opts...)
+	_, _, _, err := snapdb.SetupForTesting(opts...)
 	require.NoError(t, err)
 
 	require.True(t, schemaCalled, "schemaInit should be called on slow path")
@@ -69,25 +69,25 @@ func TestLifecycle_FastPath(t *testing.T) {
 
 	var schemaCalled, dataCalled bool
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error {
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error {
 			schemaCalled = true
 			return nil
 		}),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error {
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error {
 			dataCalled = true
 			return nil
 		}),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
 	}
 
-	_, _, _, err := dbtestkit.SetupForTesting(opts...)
+	_, _, _, err := snapdb.SetupForTesting(opts...)
 	require.NoError(t, err)
 
 	require.False(t, schemaCalled, "schemaInit must NOT be called on fast path")
@@ -112,26 +112,26 @@ func TestLifecycle_WithGeneratePristine_ForcesSlowPath(t *testing.T) {
 
 	var schemaCalled, dataCalled bool
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error {
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error {
 			schemaCalled = true
 			return nil
 		}),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error {
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error {
 			dataCalled = true
 			return nil
 		}),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithGeneratePristine(true),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithGeneratePristine(true),
 	}
 
-	_, _, _, err := dbtestkit.SetupForTesting(opts...)
+	_, _, _, err := snapdb.SetupForTesting(opts...)
 	require.NoError(t, err)
 
 	require.True(t, schemaCalled, "schemaInit should be called when generatePristine=true")
@@ -154,28 +154,28 @@ func TestLifecycle_ResetSequence(t *testing.T) {
 
 	var invalidatorCalled, seederCalled bool
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithCacheInvalidator(func(*dbtestkit.Environment) error {
+		snapdb.WithCacheInvalidator(func(*snapdb.Environment) error {
 			invalidatorCalled = true
 			return nil
 		}),
-		dbtestkit.WithSeeders(func(*dbtestkit.Environment) error {
+		snapdb.WithSeeders(func(*snapdb.Environment) error {
 			seederCalled = true
 			return nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(nil), // quiet
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(nil), // quiet
 	}
 
-	err := dbtestkit.ResetForTesting(noopT{}, opts...)
+	err := snapdb.ResetForTesting(noopT{}, opts...)
 	require.NoError(t, err)
 
 	require.True(t, invalidatorCalled, "cache invalidator must be called on reset")
@@ -191,20 +191,20 @@ func TestLifecycle_ResetWithoutSeeders(t *testing.T) {
 	dumpPath := filepath.Join(tmp, "existing.sql")
 	require.NoError(t, os.WriteFile(dumpPath, []byte("-- fake"), 0o644))
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(nil),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(nil),
 	}
 
-	err := dbtestkit.ResetForTesting(noopT{}, opts...)
+	err := snapdb.ResetForTesting(noopT{}, opts...)
 	require.NoError(t, err)
 }
 
@@ -217,20 +217,20 @@ func TestLifecycle_ResetWithoutCacheInvalidator(t *testing.T) {
 	dumpPath := filepath.Join(tmp, "existing.sql")
 	require.NoError(t, os.WriteFile(dumpPath, []byte("-- fake"), 0o644))
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(nil),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(nil),
 	}
 
-	err := dbtestkit.ResetForTesting(noopT{}, opts...)
+	err := snapdb.ResetForTesting(noopT{}, opts...)
 	require.NoError(t, err)
 }
 
@@ -244,21 +244,21 @@ func TestLifecycle_DSNExposedToEngineInit(t *testing.T) {
 	require.NoError(t, os.WriteFile(dumpPath, []byte("-- fake"), 0o644))
 
 	var seenDSN string
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
 			seenDSN = env.DSN()
-			return dbtestkit.NoopEngine{}, nil
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(nil),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(nil),
 	}
 
-	_, _, _, err := dbtestkit.SetupForTesting(opts...)
+	_, _, _, err := snapdb.SetupForTesting(opts...)
 	require.NoError(t, err)
 	require.Equal(t, "custom-dsn-12345", seenDSN)
 }
@@ -275,28 +275,28 @@ func TestLifecycle_EngineExposedToResetCallbacks(t *testing.T) {
 
 	var invalidatorSawEngine, seederSawEngine bool
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithCacheInvalidator(func(env *dbtestkit.Environment) error {
+		snapdb.WithCacheInvalidator(func(env *snapdb.Environment) error {
 			invalidatorSawEngine = env.Engine() != nil
 			return nil
 		}),
-		dbtestkit.WithSeeders(func(env *dbtestkit.Environment) error {
+		snapdb.WithSeeders(func(env *snapdb.Environment) error {
 			seederSawEngine = env.Engine() != nil
 			return nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(nil),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(nil),
 	}
 
-	err := dbtestkit.ResetForTesting(noopT{}, opts...)
+	err := snapdb.ResetForTesting(noopT{}, opts...)
 	require.NoError(t, err)
 	require.True(t, invalidatorSawEngine, "cache invalidator must see the engine")
 	require.True(t, seederSawEngine, "seeder must see the engine")
@@ -311,23 +311,23 @@ func TestLifecycle_SchemaInitSeesNilEngine(t *testing.T) {
 
 	var schemaSawEngine bool
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(env *dbtestkit.Environment) error {
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(env *snapdb.Environment) error {
 			schemaSawEngine = env.Engine() != nil
 			return nil
 		}),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(filepath.Join(tmp, "nonexistent.sql")),
-		dbtestkit.WithLogger(nil),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(filepath.Join(tmp, "nonexistent.sql")),
+		snapdb.WithLogger(nil),
 	}
 
-	_, _, _, err := dbtestkit.SetupForTesting(opts...)
+	_, _, _, err := snapdb.SetupForTesting(opts...)
 	require.NoError(t, err)
 	require.False(t, schemaSawEngine,
 		"schemaInit runs before engine init; env.Engine() should be nil")
@@ -344,20 +344,20 @@ func TestLifecycle_ResetForTesting_TearsDown(t *testing.T) {
 	dumpPath := filepath.Join(tmp, "existing.sql")
 	require.NoError(t, os.WriteFile(dumpPath, []byte("-- fake"), 0o644))
 
-	opts := []dbtestkit.Option{
-		dbtestkit.WithDriver(mock),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
-			return dbtestkit.NoopEngine{}, nil
+	opts := []snapdb.Option{
+		snapdb.WithDriver(mock),
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
+			return snapdb.NoopEngine{}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(nil),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(nil),
 	}
 
-	err := dbtestkit.ResetForTesting(noopT{}, opts...)
+	err := snapdb.ResetForTesting(noopT{}, opts...)
 	require.NoError(t, err)
 
 	calls := mock.Calls()
@@ -368,7 +368,7 @@ func TestLifecycle_ResetForTesting_TearsDown(t *testing.T) {
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //
 
-// noopT is a minimal implementation of dbtestkit.MinimalTandB for use in
+// noopT is a minimal implementation of snapdb.MinimalTandB for use in
 // tests where we don't care about log output.
 type noopT struct{}
 

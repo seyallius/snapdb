@@ -1,9 +1,9 @@
-// Package dbtestkit. engine.go - Defines the minimal Engine abstraction the library
+// Package snapdb. engine.go - Defines the minimal Engine abstraction the library
 // needs to talk to the user's database for truncation, pings, and cache invalidation.
 //
 // The library intentionally does NOT depend on any specific ORM (xorm, gorm, sqlx, …).
 // Users adapt their ORM to this interface; an xorm adapter ships in the
-// dbtestkit/xormadapter subpackage.
+// snapdb/xormadapter subpackage.
 package snapdb
 
 import "database/sql"

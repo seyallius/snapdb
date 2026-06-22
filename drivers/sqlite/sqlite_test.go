@@ -16,7 +16,7 @@ import (
 
 // ---------------------------------- Types, Variables & Constants ---------------------------------- //
 
-// sqliteEngine is a minimal dbtestkit.Engine wrapping *sql.DB on SQLite.
+// sqliteEngine is a minimal snapdb.Engine wrapping *sql.DB on SQLite.
 // Used only by these tests to exercise the driver end-to-end.
 type sqliteEngine struct{ db *sql.DB }
 
@@ -73,9 +73,9 @@ func TestSQLiteDriver_StartAndStop(t *testing.T) {
 	tmp := t.TempDir()
 	drv := New()
 
-	env := &dbtestkit.Environment{}
+	env := &snapdb.Environment{}
 	// We need to construct an Environment manually with the fields SQLite
-	// reads. The dbtestkit package exposes SQLitePath() and TestdataDir()
+	// reads. The snapdb package exposes SQLitePath() and TestdataDir()
 	// as public methods — we set them via the testing helper.
 	env = envWithSQLitePaths(env, tmp, filepath.Join(tmp, "test.sqlite"))
 
@@ -223,20 +223,20 @@ func TestSQLiteDriver_Truncate_NoEngine(t *testing.T) {
 // identifier.
 func TestSQLiteDriver_DriverName(t *testing.T) {
 	drv := New()
-	require.Equal(t, dbtestkit.DriverSQLite, drv.Driver())
+	require.Equal(t, snapdb.DriverSQLite, drv.Driver())
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //
 
-// envWithSQLitePaths returns an *dbtestkit.Environment configured with the
-// given testdata dir and SQLite file path. The dbtestkit package does not
+// envWithSQLitePaths returns an *snapdb.Environment configured with the
+// given testdata dir and SQLite file path. The snapdb package does not
 // expose a public constructor for Environment (it's an opaque struct), so
 // we use the testing helper that the package exposes.
-func envWithSQLitePaths(env *dbtestkit.Environment, testdataDir, sqlitePath string) *dbtestkit.Environment {
-	return dbtestkit.NewEnvironmentForTesting(env, dbtestkit.DriverSQLite, testdataDir, sqlitePath)
+func envWithSQLitePaths(env *snapdb.Environment, testdataDir, sqlitePath string) *snapdb.Environment {
+	return snapdb.NewEnvironmentForTesting(env, snapdb.DriverSQLite, testdataDir, sqlitePath)
 }
 
 // envWithEngine returns a copy of env with the Engine field replaced.
-func envWithEngine(env *dbtestkit.Environment, eng dbtestkit.Engine) *dbtestkit.Environment {
-	return dbtestkit.EnvWithEngineForTesting(env, eng)
+func envWithEngine(env *snapdb.Environment, eng snapdb.Engine) *snapdb.Environment {
+	return snapdb.EnvWithEngineForTesting(env, eng)
 }

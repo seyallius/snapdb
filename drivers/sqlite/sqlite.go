@@ -1,4 +1,4 @@
-// Package sqlite. sqlite.go - SQLite backend for dbtestkit. Uses an in-process,
+// Package sqlite. sqlite.go - SQLite backend for snapdb. Uses an in-process,
 // file-backed SQLite database instead of a Docker container — ideal for fast,
 // hermetic tests that do not need a real network database.
 //
@@ -19,7 +19,7 @@ import (
 
 // ---------------------------------- Types, Variables & Constants ---------------------------------- //
 
-// SQLiteDriver implements dbtestkit.DatabaseDriver for SQLite.
+// SQLiteDriver implements snapdb.DatabaseDriver for SQLite.
 type SQLiteDriver struct {
 	dbPath       string
 	pristinePath string
@@ -29,28 +29,28 @@ type SQLiteDriver struct {
 
 // New returns a fresh SQLite driver instance.
 //
-// Pass the result to dbtestkit.WithDriver:
+// Pass the result to snapdb.WithDriver:
 //
-//	dbtestkit.Run(m,
-//	    dbtestkit.WithDriver(sqlite.New()),
+//	snapdb.Run(m,
+//	    snapdb.WithDriver(sqlite.New()),
 //	    ...
 //	)
-func New() dbtestkit.DatabaseDriver {
+func New() snapdb.DatabaseDriver {
 	return &SQLiteDriver{}
 }
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
-// Driver returns the dbtestkit.Driver constant this implementation serves.
-func (d *SQLiteDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverSQLite }
+// Driver returns the snapdb.Driver constant this implementation serves.
+func (d *SQLiteDriver) Driver() snapdb.Driver { return snapdb.DriverSQLite }
 
 // Start ensures the SQLite database file does not exist (fresh start) and
 // returns its file:// DSN.
 //
-// The actual schema + data initialization is performed by the dbtestkit
+// The actual schema + data initialization is performed by the snapdb
 // core via the user's WithSchemaInitializer and WithDataInitializer
 // callbacks — Start only prepares the filesystem.
-func (d *SQLiteDriver) Start(_ context.Context, env *dbtestkit.Environment) (string, error) {
+func (d *SQLiteDriver) Start(_ context.Context, env *snapdb.Environment) (string, error) {
 	d.dbPath = env.SQLitePath()
 	d.pristinePath = env.TestdataDir() + "/sqlite-pristine.snapshot"
 
@@ -73,7 +73,7 @@ func (d *SQLiteDriver) Start(_ context.Context, env *dbtestkit.Environment) (str
 // For SQLite, the "dump path" passed in is treated as a binary snapshot
 // file path rather than a SQL text dump. This is dramatically faster than
 // re-running .dump output through the CLI.
-func (d *SQLiteDriver) RestoreDump(_ context.Context, _ *dbtestkit.Environment, dumpPath string) error {
+func (d *SQLiteDriver) RestoreDump(_ context.Context, _ *snapdb.Environment, dumpPath string) error {
 	if _, err := os.Stat(dumpPath); err != nil {
 		return fmt.Errorf("sqlite: pristine snapshot missing at %s: %w", dumpPath, err)
 	}
@@ -81,7 +81,7 @@ func (d *SQLiteDriver) RestoreDump(_ context.Context, _ *dbtestkit.Environment, 
 	// Close any open connection by removing the working file first; the
 	// engine will re-open it on next query. (Callers using a connection
 	// pool with cache=shared should ensure the engine has been closed
-	// before reset — dbtestkit's core does this via the cache invalidator
+	// before reset — snapdb's core does this via the cache invalidator
 	// hook or by closing the engine itself.)
 	if err := os.Remove(d.dbPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("sqlite: failed to remove working db file: %w", err)
@@ -94,7 +94,7 @@ func (d *SQLiteDriver) RestoreDump(_ context.Context, _ *dbtestkit.Environment, 
 
 // GenerateDump snapshots the current working database file as the pristine
 // copy. Called once during the slow-path setup.
-func (d *SQLiteDriver) GenerateDump(_ context.Context, _ *dbtestkit.Environment, dumpPath string) error {
+func (d *SQLiteDriver) GenerateDump(_ context.Context, _ *snapdb.Environment, dumpPath string) error {
 	if _, err := os.Stat(d.dbPath); err != nil {
 		return fmt.Errorf("sqlite: working db file missing at %s: %w", d.dbPath, err)
 	}
@@ -105,11 +105,11 @@ func (d *SQLiteDriver) GenerateDump(_ context.Context, _ *dbtestkit.Environment,
 }
 
 // Truncate empties every user table via DELETE statements. Used by the
-// dbtestkit core as a fallback when no pristine snapshot is available.
+// snapdb core as a fallback when no pristine snapshot is available.
 //
 // SQLite does not support TRUNCATE TABLE — we use DELETE, which is slower
 // than the snapshot restore but works without a pre-baked snapshot.
-func (d *SQLiteDriver) Truncate(_ context.Context, env *dbtestkit.Environment) error {
+func (d *SQLiteDriver) Truncate(_ context.Context, env *snapdb.Environment) error {
 	engine := env.Engine()
 	if engine == nil {
 		return fmt.Errorf("sqlite: Truncate called before engine init")
@@ -145,7 +145,7 @@ func (d *SQLiteDriver) Truncate(_ context.Context, env *dbtestkit.Environment) e
 }
 
 // Stop removes the working database file.
-func (d *SQLiteDriver) Stop(_ context.Context, _ *dbtestkit.Environment) error {
+func (d *SQLiteDriver) Stop(_ context.Context, _ *snapdb.Environment) error {
 	if d.dbPath == "" {
 		return nil
 	}
@@ -157,8 +157,8 @@ func (d *SQLiteDriver) Stop(_ context.Context, _ *dbtestkit.Environment) error {
 
 // ResetStrategy returns TruncateAndSeed to avoid Windows file-locking issues
 // when trying to replace the SQLite file while Xorm holds open connections.
-func (d *SQLiteDriver) ResetStrategy() dbtestkit.ResetStrategy {
-	return dbtestkit.ResetStrategyTruncateAndSeed
+func (d *SQLiteDriver) ResetStrategy() snapdb.ResetStrategy {
+	return snapdb.ResetStrategyTruncateAndSeed
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //

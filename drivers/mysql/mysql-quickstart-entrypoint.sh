@@ -1,5 +1,5 @@
 #!/bin/bash
-# mysql-quickstart-entrypoint.sh - Optimized MySQL entrypoint for dbtestkit.
+# mysql-quickstart-entrypoint.sh - Optimized MySQL entrypoint for snapdb.
 #
 # If /var/lib/mysql is empty (fresh tmpfs), extract a pre-baked empty database
 # tarball to skip the multi-second initdb first-run sequence. Then hand off to
@@ -7,7 +7,7 @@
 set -e
 
 if [ -z "$(ls -A /var/lib/mysql 2>/dev/null)" ] && [ -f /tmp/empty-mysql.tar.gz ]; then
-  echo "==> dbtestkit: hydrating pre-baked MySQL data directory"
+  echo "==> snapdb: hydrating pre-baked MySQL data directory"
   tar -xzf /tmp/empty-mysql.tar.gz -C /var/lib/mysql/
   chown -R mysql:mysql /var/lib/mysql/
 fi

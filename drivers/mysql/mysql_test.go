@@ -16,7 +16,7 @@ import (
 
 // ------------------------------------------- Fixtures ------------------------------------- //
 
-// sqlEngine wraps *sql.DB to satisfy dbtestkit.Engine for testing.
+// sqlEngine wraps *sql.DB to satisfy snapdb.Engine for testing.
 type sqlEngine struct{ db *sql.DB }
 
 func (e *sqlEngine) Exec(q string, args ...any) (sql.Result, error) { return e.db.Exec(q, args...) }
@@ -67,28 +67,28 @@ func TestMySQLDriver_Integration(t *testing.T) {
 	dumpPath := filepath.Join(tmp, "mysql-pristine.sql")
 
 	// SetupForTesting boots the actual Docker container and returns the live resources
-	env, eng, drv, err := dbtestkit.SetupForTesting(
-		dbtestkit.WithDriver(mysql.New()),
-		dbtestkit.WithDatabase(dbtestkit.DatabaseConfig{
+	env, eng, drv, err := snapdb.SetupForTesting(
+		snapdb.WithDriver(mysql.New()),
+		snapdb.WithDatabase(snapdb.DatabaseConfig{
 			Database:       "testdb",
 			Username:       "root",
 			Password:       "testpass",
 			Image:          "mysql:lts",
 			StartupTimeout: 3 * time.Minute, // Allow time for image pull on cold CI
 		}),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
 			db, err := sql.Open("mysql", env.DSN())
 			if err != nil {
 				return nil, err
 			}
 			return &sqlEngine{db: db}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(dbtestkit.NewDefaultLogger(nil)),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(snapdb.NewDefaultLogger(nil)),
 	)
 	require.NoError(t, err, "SetupForTesting failed to boot MySQL container")
 

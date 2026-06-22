@@ -16,7 +16,7 @@ import (
 
 // ------------------------------------------- Fixtures ------------------------------------- //
 
-// sqlEngine wraps *sql.DB to satisfy dbtestkit.Engine for testing.
+// sqlEngine wraps *sql.DB to satisfy snapdb.Engine for testing.
 // (Same implementation as MySQL test)
 type sqlEngine struct{ db *sql.DB }
 
@@ -67,18 +67,18 @@ func TestPostgresDriver_Integration(t *testing.T) {
 	tmp := t.TempDir()
 	dumpPath := filepath.Join(tmp, "postgres-pristine.sql")
 
-	env, eng, drv, err := dbtestkit.SetupForTesting(
-		dbtestkit.WithDriver(postgres.New()),
-		dbtestkit.WithDatabase(dbtestkit.DatabaseConfig{
+	env, eng, drv, err := snapdb.SetupForTesting(
+		snapdb.WithDriver(postgres.New()),
+		snapdb.WithDatabase(snapdb.DatabaseConfig{
 			Database:       "testdb",
 			Username:       "postgres",
 			Password:       "testpass",
 			Image:          "postgres:16-alpine",
 			StartupTimeout: 3 * time.Minute,
 		}),
-		dbtestkit.WithSchemaInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithDataInitializer(func(*dbtestkit.Environment) error { return nil }),
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
+		snapdb.WithSchemaInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithDataInitializer(func(*snapdb.Environment) error { return nil }),
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
 			// lib/pq accepts the exact DSN format postgres.go returns
 			db, err := sql.Open("postgres", env.DSN())
 			if err != nil {
@@ -86,10 +86,10 @@ func TestPostgresDriver_Integration(t *testing.T) {
 			}
 			return &sqlEngine{db: db}, nil
 		}),
-		dbtestkit.WithProjectRoot(tmp),
-		dbtestkit.WithTestdataDir(tmp),
-		dbtestkit.WithPristineDumpPath(dumpPath),
-		dbtestkit.WithLogger(dbtestkit.NewDefaultLogger(nil)),
+		snapdb.WithProjectRoot(tmp),
+		snapdb.WithTestdataDir(tmp),
+		snapdb.WithPristineDumpPath(dumpPath),
+		snapdb.WithLogger(snapdb.NewDefaultLogger(nil)),
 	)
 	require.NoError(t, err, "SetupForTesting failed to boot Postgres container")
 

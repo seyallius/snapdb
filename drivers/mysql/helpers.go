@@ -53,7 +53,7 @@ func copyFileFromContainer(ctx context.Context, ctr testcontainers.Container, co
 //
 // Instead we wait for the entrypoint's "ready for connections" log line,
 // which fires exactly once after the optimized first-run sequence completes.
-func waitForMySQL(_ context.Context, timeout time.Duration, cfg dbtestkit.DatabaseConfig) wait.Strategy {
+func waitForMySQL(_ context.Context, timeout time.Duration, cfg snapdb.DatabaseConfig) wait.Strategy {
 	urlFunc := func(host string, port nat.Port) string {
 		return fmt.Sprintf("%s:%s@tcp(%s:%s)/", cfg.Username, cfg.Password, host, port.Port())
 	}

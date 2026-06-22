@@ -1,4 +1,4 @@
-// Package dbtestkit. testing.go - Exposes a minimal set of internal hooks for
+// Package snapdb. testing.go - Exposes a minimal set of internal hooks for
 // use by tests in this package and downstream consumers that need to assert
 // option application without spinning up a real container.
 //

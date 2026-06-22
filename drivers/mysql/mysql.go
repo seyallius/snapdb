@@ -1,4 +1,4 @@
-// Package mysql. mysql.go - MySQL backend for dbtestkit. Boots a MySQL 8.x
+// Package mysql. mysql.go - MySQL backend for snapdb. Boots a MySQL 8.x
 // test container using testcontainers-go, with a tmpfs-backed data directory
 // and an optimized entrypoint that re-hydrates a pre-baked empty database
 // tarball (skipping the multi-second initdb phase).
@@ -43,30 +43,30 @@ const (
 //go:embed mysql-quickstart-entrypoint.sh
 var quickstartEntrypoint []byte
 
-// MySQLDriver implements dbtestkit.DatabaseDriver for MySQL.
+// MySQLDriver implements snapdb.DatabaseDriver for MySQL.
 type MySQLDriver struct {
 	container testcontainers.Container
-	cfg       dbtestkit.DatabaseConfig
+	cfg       snapdb.DatabaseConfig
 }
 
 // ------------------------------------------- Constructor(s) --------------------------------------- //
 
 // New returns a fresh MySQL driver instance.
 //
-// Pass the result to dbtestkit.WithDriver:
+// Pass the result to snapdb.WithDriver:
 //
-//	dbtestkit.Run(m,
-//	    dbtestkit.WithDriver(mysql.New()),
+//	snapdb.Run(m,
+//	    snapdb.WithDriver(mysql.New()),
 //	    ...
 //	)
-func New() dbtestkit.DatabaseDriver {
+func New() snapdb.DatabaseDriver {
 	return &MySQLDriver{}
 }
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
-// Driver returns the dbtestkit.Driver constant this implementation serves.
-func (d *MySQLDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverMySQL }
+// Driver returns the snapdb.Driver constant this implementation serves.
+func (d *MySQLDriver) Driver() snapdb.Driver { return snapdb.DriverMySQL }
 
 // Start boots the MySQL container and returns the DSN.
 //
@@ -76,7 +76,7 @@ func (d *MySQLDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverMySQL }
 //     (skipping initdb's slow first-run sequence)
 //   - no wait strategy — the entrypoint guarantees readiness before exec
 //     returns control
-func (d *MySQLDriver) Start(ctx context.Context, env *dbtestkit.Environment) (string, error) {
+func (d *MySQLDriver) Start(ctx context.Context, env *snapdb.Environment) (string, error) {
 	cfg := env.DriverConfig()
 	d.cfg = cfg
 
@@ -150,7 +150,7 @@ func (d *MySQLDriver) Start(ctx context.Context, env *dbtestkit.Environment) (st
 
 // RestoreDump pipes the pristine SQL dump into the MySQL CLI client inside
 // the container. This is the fast-path reset (~ms).
-func (d *MySQLDriver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *MySQLDriver) RestoreDump(ctx context.Context, env *snapdb.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("mysql: RestoreDump called before Start")
 	}
@@ -179,7 +179,7 @@ func (d *MySQLDriver) RestoreDump(ctx context.Context, env *dbtestkit.Environmen
 //
 // The dump is generated with --add-drop-table so restores are idempotent and
 // do not require a separate TRUNCATE pass.
-func (d *MySQLDriver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *MySQLDriver) GenerateDump(ctx context.Context, env *snapdb.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("mysql: GenerateDump called before Start")
 	}
@@ -204,12 +204,12 @@ func (d *MySQLDriver) GenerateDump(ctx context.Context, env *dbtestkit.Environme
 
 // Truncate is a no-op for MySQL — the pristine dump's DROP TABLE IF EXISTS
 // statements make truncation redundant on the fast path.
-func (d *MySQLDriver) Truncate(_ context.Context, _ *dbtestkit.Environment) error {
+func (d *MySQLDriver) Truncate(_ context.Context, _ *snapdb.Environment) error {
 	return nil
 }
 
 // Stop terminates the container.
-func (d *MySQLDriver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
+func (d *MySQLDriver) Stop(ctx context.Context, _ *snapdb.Environment) error {
 	if d.container == nil {
 		return nil
 	}
@@ -220,8 +220,8 @@ func (d *MySQLDriver) Stop(ctx context.Context, _ *dbtestkit.Environment) error 
 }
 
 // ResetStrategy returns RestoreDump to utilize the fast-path CLI pipe.
-func (d *MySQLDriver) ResetStrategy() dbtestkit.ResetStrategy {
-	return dbtestkit.ResetStrategyRestoreDump
+func (d *MySQLDriver) ResetStrategy() snapdb.ResetStrategy {
+	return snapdb.ResetStrategyRestoreDump
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //

@@ -29,42 +29,42 @@ func newMockDriver(dsn string) *mockDriver {
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
-// Driver implements dbtestkit.DatabaseDriver.
-func (m *mockDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverSQLite }
+// Driver implements snapdb.DatabaseDriver.
+func (m *mockDriver) Driver() snapdb.Driver { return snapdb.DriverSQLite }
 
-// Start implements dbtestkit.DatabaseDriver.
-func (m *mockDriver) Start(_ context.Context, _ *dbtestkit.Environment) (string, error) {
+// Start implements snapdb.DatabaseDriver.
+func (m *mockDriver) Start(_ context.Context, _ *snapdb.Environment) (string, error) {
 	m.record("Start")
 	return m.dsn, nil
 }
 
-// RestoreDump implements dbtestkit.DatabaseDriver.
-func (m *mockDriver) RestoreDump(_ context.Context, _ *dbtestkit.Environment, _ string) error {
+// RestoreDump implements snapdb.DatabaseDriver.
+func (m *mockDriver) RestoreDump(_ context.Context, _ *snapdb.Environment, _ string) error {
 	m.record("RestoreDump")
 	return nil
 }
 
-// GenerateDump implements dbtestkit.DatabaseDriver.
-func (m *mockDriver) GenerateDump(_ context.Context, _ *dbtestkit.Environment, _ string) error {
+// GenerateDump implements snapdb.DatabaseDriver.
+func (m *mockDriver) GenerateDump(_ context.Context, _ *snapdb.Environment, _ string) error {
 	m.record("GenerateDump")
 	return nil
 }
 
-// Truncate implements dbtestkit.DatabaseDriver.
-func (m *mockDriver) Truncate(_ context.Context, _ *dbtestkit.Environment) error {
+// Truncate implements snapdb.DatabaseDriver.
+func (m *mockDriver) Truncate(_ context.Context, _ *snapdb.Environment) error {
 	m.record("Truncate")
 	return nil
 }
 
-// Stop implements dbtestkit.DatabaseDriver.
-func (m *mockDriver) Stop(_ context.Context, _ *dbtestkit.Environment) error {
+// Stop implements snapdb.DatabaseDriver.
+func (m *mockDriver) Stop(_ context.Context, _ *snapdb.Environment) error {
 	m.record("Stop")
 	return nil
 }
 
-// ResetStrategy implements dbtestkit.DatabaseDriver.
-func (m *mockDriver) ResetStrategy() dbtestkit.ResetStrategy {
-	return dbtestkit.ResetStrategyRestoreDump
+// ResetStrategy implements snapdb.DatabaseDriver.
+func (m *mockDriver) ResetStrategy() snapdb.ResetStrategy {
+	return snapdb.ResetStrategyRestoreDump
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //

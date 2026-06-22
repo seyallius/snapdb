@@ -1,4 +1,4 @@
-// Package dbtestkit. environment.go - Defines the Environment struct that is passed
+// Package snapdb. environment.go - Defines the Environment struct that is passed
 // to every user-supplied callback. It exposes the runtime context the caller needs
 // (DSN, driver, project root, logger, engine handle) without leaking internal state.
 package snapdb

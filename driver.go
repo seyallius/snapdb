@@ -1,4 +1,4 @@
-// Package dbtestkit. driver.go - Defines the set of supported database drivers and
+// Package snapdb. driver.go - Defines the set of supported database drivers and
 // provides validation helpers.
 package snapdb
 

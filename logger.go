@@ -1,4 +1,4 @@
-// Package dbtestkit. logger.go - Provides the Logger interface and a default
+// Package snapdb. logger.go - Provides the Logger interface and a default
 // tree-style printer that mirrors the original casdoor test output format.
 package snapdb
 

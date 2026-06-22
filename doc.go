@@ -1,7 +1,7 @@
-// Package dbtestkit. doc.go - Provides a generic, ORM-agnostic test container toolkit
+// Package snapdb. doc.go - Provides a generic, ORM-agnostic test container toolkit
 // for integration tests that need a real database (MySQL, PostgreSQL, or SQLite).
 //
-// dbtestkit is designed to be wired into a Go test package's TestMain function. It boots
+// snapdb is designed to be wired into a Go test package's TestMain function. It boots
 // a database (in Docker for MySQL/PostgreSQL, or on local disk for SQLite), restores a
 // pre-baked pristine SQL dump for millisecond resets between tests, and exposes a single
 // Reset entry-point that returns the database to a known-good state before every test.

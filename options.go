@@ -1,4 +1,4 @@
-// Package dbtestkit. options.go - Defines the functional-options API used to
+// Package snapdb. options.go - Defines the functional-options API used to
 // configure a test environment.
 //
 // All configuration is supplied via WithXxx options — there are no environment
@@ -100,18 +100,18 @@ func defaultConfig() *config {
 //
 //	import "github.com/seyallius/snapdb/drivers/mysql"
 //
-//	dbtestkit.Run(m, mysql.New(), schemaInit, dataInit, engineInit,
-//	    dbtestkit.WithDatabase(dbCfg),
+//	snapdb.Run(m, mysql.New(), schemaInit, dataInit, engineInit,
+//	    snapdb.WithDatabase(dbCfg),
 //	)
 func WithDriver(d DatabaseDriver) Option {
 	return func(c *config) error {
 		if d == nil {
-			return fmt.Errorf("dbtestkit: WithDriver requires a non-nil driver")
+			return fmt.Errorf("snapdb: WithDriver requires a non-nil driver")
 		}
 		c.driverImpl = d
 		c.driverName = d.Driver()
 		if !c.driverName.IsValid() {
-			return fmt.Errorf("dbtestkit: driver %q reported an unsupported identifier (valid: %v)",
+			return fmt.Errorf("snapdb: driver %q reported an unsupported identifier (valid: %v)",
 				c.driverName, SupportedDrivers())
 		}
 		return nil
@@ -124,7 +124,7 @@ func WithDatabase(db DatabaseConfig) Option {
 	return func(c *config) error {
 		if db.Database == "" {
 			l := defaultConfig().logger
-			l.Warn("dbtestkit: WithDatabase provided an empty Database name")
+			l.Warn("snapdb: WithDatabase provided an empty Database name")
 		}
 		c.database = db
 		return nil
@@ -140,7 +140,7 @@ func WithDatabase(db DatabaseConfig) Option {
 func WithSchemaInitializer(fn SchemaInitializer) Option {
 	return func(c *config) error {
 		if fn == nil {
-			return fmt.Errorf("dbtestkit: WithSchemaInitializer requires a non-nil callback")
+			return fmt.Errorf("snapdb: WithSchemaInitializer requires a non-nil callback")
 		}
 		c.schemaInit = fn
 		return nil
@@ -155,7 +155,7 @@ func WithSchemaInitializer(fn SchemaInitializer) Option {
 func WithDataInitializer(fn DataInitializer) Option {
 	return func(c *config) error {
 		if fn == nil {
-			return fmt.Errorf("dbtestkit: WithDataInitializer requires a non-nil callback")
+			return fmt.Errorf("snapdb: WithDataInitializer requires a non-nil callback")
 		}
 		c.dataInit = fn
 		return nil
@@ -170,7 +170,7 @@ func WithDataInitializer(fn DataInitializer) Option {
 func WithEngineInitializer(fn EngineInitializer) Option {
 	return func(c *config) error {
 		if fn == nil {
-			return fmt.Errorf("dbtestkit: WithEngineInitializer requires a non-nil callback")
+			return fmt.Errorf("snapdb: WithEngineInitializer requires a non-nil callback")
 		}
 		c.engineInit = fn
 		return nil
@@ -184,7 +184,7 @@ func WithEngineInitializer(fn EngineInitializer) Option {
 func WithCacheInvalidator(fn CacheInvalidator) Option {
 	return func(c *config) error {
 		if fn == nil {
-			return fmt.Errorf("dbtestkit: WithCacheInvalidator requires a non-nil callback")
+			return fmt.Errorf("snapdb: WithCacheInvalidator requires a non-nil callback")
 		}
 		c.cacheInvalidator = fn
 		return nil
@@ -197,7 +197,7 @@ func WithSeeders(seeders ...Seeder) Option {
 	return func(c *config) error {
 		for _, s := range seeders {
 			if s == nil {
-				return fmt.Errorf("dbtestkit: WithSeeders contains a nil seeder")
+				return fmt.Errorf("snapdb: WithSeeders contains a nil seeder")
 			}
 		}
 		c.seeders = append(c.seeders, seeders...)
@@ -211,7 +211,7 @@ func WithSeeders(seeders ...Seeder) Option {
 func WithPristineDumpPath(path string) Option {
 	return func(c *config) error {
 		if path == "" {
-			return fmt.Errorf("dbtestkit: WithPristineDumpPath requires a non-empty path")
+			return fmt.Errorf("snapdb: WithPristineDumpPath requires a non-empty path")
 		}
 		c.pristineDumpPath = path
 		return nil
@@ -225,7 +225,7 @@ func WithPristineDumpPath(path string) Option {
 func WithTestdataDir(dir string) Option {
 	return func(c *config) error {
 		if dir == "" {
-			return fmt.Errorf("dbtestkit: WithTestdataDir requires a non-empty path")
+			return fmt.Errorf("snapdb: WithTestdataDir requires a non-empty path")
 		}
 		c.testdataDir = dir
 		return nil
@@ -233,11 +233,11 @@ func WithTestdataDir(dir string) Option {
 }
 
 // WithSQLitePath overrides the on-disk location of the SQLite database file.
-// SQLite driver only. Defaults to <testdataDir>/dbtestkit.sqlite.
+// SQLite driver only. Defaults to <testdataDir>/snapdb.sqlite.
 func WithSQLitePath(path string) Option {
 	return func(c *config) error {
 		if path == "" {
-			return fmt.Errorf("dbtestkit: WithSQLitePath requires a non-empty path")
+			return fmt.Errorf("snapdb: WithSQLitePath requires a non-empty path")
 		}
 		c.sqlitePath = path
 		return nil
@@ -250,7 +250,7 @@ func WithSQLitePath(path string) Option {
 func WithProjectRoot(path string) Option {
 	return func(c *config) error {
 		if path == "" {
-			return fmt.Errorf("dbtestkit: WithProjectRoot requires a non-empty path")
+			return fmt.Errorf("snapdb: WithProjectRoot requires a non-empty path")
 		}
 		c.projectRoot = path
 		return nil
@@ -288,7 +288,7 @@ func applyOptions(opts []Option) (*config, error) {
 	c := defaultConfig()
 	for i, opt := range opts {
 		if opt == nil {
-			return nil, fmt.Errorf("dbtestkit: option at index %d is nil", i)
+			return nil, fmt.Errorf("snapdb: option at index %d is nil", i)
 		}
 		if err := opt(c); err != nil {
 			return nil, err
@@ -303,20 +303,20 @@ func applyOptions(opts []Option) (*config, error) {
 // validate enforces required fields and fills in derived defaults.
 func (c *config) validate() error {
 	if c.driverImpl == nil {
-		return fmt.Errorf("dbtestkit: WithDriver is required")
+		return fmt.Errorf("snapdb: WithDriver is required")
 	}
 	if !c.driverName.IsValid() {
-		return fmt.Errorf("dbtestkit: driver reported invalid identifier %q (valid: %v)",
+		return fmt.Errorf("snapdb: driver reported invalid identifier %q (valid: %v)",
 			c.driverName, SupportedDrivers())
 	}
 	if c.schemaInit == nil {
-		return fmt.Errorf("dbtestkit: WithSchemaInitializer is required")
+		return fmt.Errorf("snapdb: WithSchemaInitializer is required")
 	}
 	if c.dataInit == nil {
-		return fmt.Errorf("dbtestkit: WithDataInitializer is required")
+		return fmt.Errorf("snapdb: WithDataInitializer is required")
 	}
 	if c.engineInit == nil {
-		return fmt.Errorf("dbtestkit: WithEngineInitializer is required")
+		return fmt.Errorf("snapdb: WithEngineInitializer is required")
 	}
 
 	// Apply driver-specific defaults.
@@ -370,7 +370,7 @@ func (c *config) validate() error {
 
 	// Resolve SQLite path if not explicitly set.
 	if c.driverName == DriverSQLite && c.sqlitePath == "" {
-		c.sqlitePath = c.testdataDir + "/dbtestkit.sqlite"
+		c.sqlitePath = c.testdataDir + "/snapdb.sqlite"
 	}
 
 	return nil

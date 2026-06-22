@@ -1,8 +1,8 @@
-# dbtestkit
+# snapdb
 
 A generic, ORM-agnostic test container toolkit for Go integration tests that need a real database.
 
-`dbtestkit` boots a database (in Docker for MySQL/PostgreSQL, or on local disk for SQLite), restores a pre-baked pristine SQL dump for millisecond resets between tests, and exposes a single `Reset` entry-point that returns the database to a known-good state before every test.
+`snapdb` boots a database (in Docker for MySQL/PostgreSQL, or on local disk for SQLite), restores a pre-baked pristine SQL dump for millisecond resets between tests, and exposes a single `Reset` entry-point that returns the database to a known-good state before every test.
 
 Configuration is entirely **functional-options based** — no environment variables. Every project-specific concern (schema creation, data seeding, engine construction, cache invalidation) is supplied by the caller via callbacks, so the library never imports your ORM or your domain objects.
 
@@ -46,32 +46,32 @@ import (
 
 // TestMain wires up the test container once for the whole package.
 func TestMain(m *testing.M) {
-	dbtestkit.Run(m,
+	snapdb.Run(m,
 		// 1. Pick a backend.
-		dbtestkit.WithDriver(mysql.New()),
+		snapdb.WithDriver(mysql.New()),
 
 		// 2. (Optional) Override credentials / image.
-		dbtestkit.WithDatabase(dbtestkit.DatabaseConfig{
+		snapdb.WithDatabase(snapdb.DatabaseConfig{
 			Database: "myapp",
 			Username: "root",
 			Password: "testpass",
 			Image:    "mysql:lts",
 		}),
 
-		// 3. Tell dbtestkit how to create tables (slow path only).
-		dbtestkit.WithSchemaInitializer(func(env *dbtestkit.Environment) error {
+		// 3. Tell snapdb how to create tables (slow path only).
+		snapdb.WithSchemaInitializer(func(env *snapdb.Environment) error {
 			eng, _ := xorm.NewEngine("mysql", env.DSN())
 			return eng.Sync2(&User{}, &Org{}, &Token{})
 		}),
 
-		// 4. Tell dbtestkit how to seed base data (slow path only).
-		dbtestkit.WithDataInitializer(func(env *dbtestkit.Environment) error {
+		// 4. Tell snapdb how to seed base data (slow path only).
+		snapdb.WithDataInitializer(func(env *snapdb.Environment) error {
 			// Insert your default org, app, admin user, etc.
 			return seedDefaults(env)
 		}),
 
-		// 5. Tell dbtestkit how to build your engine from the DSN.
-		dbtestkit.WithEngineInitializer(func(env *dbtestkit.Environment) (dbtestkit.Engine, error) {
+		// 5. Tell snapdb how to build your engine from the DSN.
+		snapdb.WithEngineInitializer(func(env *snapdb.Environment) (snapdb.Engine, error) {
 			eng, err := xorm.NewEngine("mysql", env.DSN())
 			if err != nil {
 				return nil, err
@@ -80,13 +80,13 @@ func TestMain(m *testing.M) {
 		}),
 
 		// 6. (Optional) Flush ORM caches before every reset.
-		dbtestkit.WithCacheInvalidator(func(env *dbtestkit.Environment) error {
+		snapdb.WithCacheInvalidator(func(env *snapdb.Environment) error {
 			// e.g. clear your Ristretto store, in-memory lookup tables, etc.
 			return nil
 		}),
 
 		// 7. (Optional) Per-test seeders.
-		dbtestkit.WithSeeders(func(env *dbtestkit.Environment) error {
+		snapdb.WithSeeders(func(env *snapdb.Environment) error {
 			// Insert test-specific fixtures.
 			return nil
 		}),
@@ -95,7 +95,7 @@ func TestMain(m *testing.M) {
 
 // Each test calls Reset at the top to get a clean database.
 func TestUserSignup(t *testing.T) {
-	if err := dbtestkit.Reset(t, "TestUserSignup"); err != nil {
+	if err := snapdb.Reset(t, "TestUserSignup"); err != nil {
 		t.Fatalf("reset: %v", err)
 	}
 
@@ -187,13 +187,13 @@ If `WithTestdataDir` is omitted, it defaults to `<projectRoot>/testdata`.
 
 If `WithPristineDumpPath` is omitted, it defaults to `<testdataDir>/<driver>-pristine.sql`.
 
-If `WithSQLitePath` is omitted, it defaults to `<testdataDir>/dbtestkit.sqlite`.
+If `WithSQLitePath` is omitted, it defaults to `<testdataDir>/snapdb.sqlite`.
 
 ---
 
 ## The `Environment` type
 
-Every user callback receives an `*dbtestkit.Environment`. It exposes:
+Every user callback receives an `*snapdb.Environment`. It exposes:
 
 | Method          | Description                                                                                                                                                                       |
 |-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -211,7 +211,7 @@ Every user callback receives an `*dbtestkit.Environment`. It exposes:
 
 ## The `Engine` interface
 
-`dbtestkit` does **not** import any specific ORM. Instead, it defines a minimal `Engine` interface:
+`snapdb` does **not** import any specific ORM. Instead, it defines a minimal `Engine` interface:
 
 ```go
 type Engine interface {
@@ -283,7 +283,7 @@ Postgres doesn't ship a quickstart tarball equivalent of MySQL's empty-mysql.tar
 
 ## Adding a new driver
 
-Implement the `dbtestkit.DatabaseDriver` interface:
+Implement the `snapdb.DatabaseDriver` interface:
 
 ```go
 type DatabaseDriver interface {
@@ -303,21 +303,21 @@ package redis
 
 import "github.com/seyallius/snapdb"
 
-func New() dbtestkit.DatabaseDriver { return &Driver{} }
+func New() snapdb.DatabaseDriver { return &Driver{} }
 
 type Driver struct{ /* ... */ }
 
-func (d *Driver) Driver() dbtestkit.Driver { return dbtestkit.Driver("redis") }
+func (d *Driver) Driver() snapdb.Driver { return snapdb.Driver("redis") }
 // ... implement the remaining methods ...
 ```
 
-Note that `dbtestkit.Driver` is just a `string`, so you can use a custom value — but the library's `IsValid()` predicate won't recognize it. That's fine for in-tree drivers; just don't expect the `SupportedDrivers()` list to include it.
+Note that `snapdb.Driver` is just a `string`, so you can use a custom value — but the library's `IsValid()` predicate won't recognize it. That's fine for in-tree drivers; just don't expect the `SupportedDrivers()` list to include it.
 
 ---
 
 ## Caching and reset correctness
 
-The hardest part of test isolation is **cache coherence**, not database state. The original casdoor code had subtle bugs where Ristretto's async eviction goroutines would hand out stale pointers after a reset. `dbtestkit` addresses this with two layers:
+The hardest part of test isolation is **cache coherence**, not database state. The original casdoor code had subtle bugs where Ristretto's async eviction goroutines would hand out stale pointers after a reset. `snapdb` addresses this with two layers:
 
 1. **`WithCacheInvalidator` callback** — invoked *before* the dump restore. Use this to flush any in-memory stores that hold pointers to DB rows (Ristretto, sync.Map, custom lookup tables).
 2. **`Engine.ClearCache()`** — invoked *after* the cache invalidator. For xorm, this forwards to `xorm.Engine.ClearCache()` which flushes the ORM-level Ristretto store.
@@ -332,9 +332,9 @@ When your schema changes (new table, new column, new default row), regenerate th
 
 ```go
 // In a one-off test or a makefile target:
-dbtestkit.Run(m,
-    dbtestkit.WithDriver(mysql.New()),
-    dbtestkit.WithGeneratePristine(true), // <-- forces slow path
+snapdb.Run(m,
+    snapdb.WithDriver(mysql.New()),
+    snapdb.WithGeneratePristine(true), // <-- forces slow path
     // ... rest of options ...
 )
 ```
@@ -363,7 +363,7 @@ The original casdoor code used environment variables (`TEST_DB_DRIVER`, `TEST_GE
 
 Project-specific functions like `object.InitDb()`, `object.CreateTables()`, `object.SetupCacheInvalidation()` move into the corresponding callbacks:
 
-| Old (casdoor)                         | New (dbtestkit callback)     |
+| Old (casdoor)                         | New (snapdb callback)     |
 |---------------------------------------|------------------------------|
 | `object.CreateTables()`               | `WithSchemaInitializer(...)` |
 | `object.InitDb()`                     | `WithDataInitializer(...)`   |
@@ -388,7 +388,7 @@ Env vars are global, hidden, and don't survive refactorings. Functional options 
 
 ### Why a `DatabaseDriver` interface in the core package?
 
-Placing the interface in the core `dbtestkit` package (rather than a `drivers` subpackage) avoids an import cycle: driver subpackages import `dbtestkit` for the `Environment` type, so `dbtestkit` cannot import them back. This is the same pattern `database/sql` uses with `driver.Driver`.
+Placing the interface in the core `snapdb` package (rather than a `drivers` subpackage) avoids an import cycle: driver subpackages import `snapdb` for the `Environment` type, so `snapdb` cannot import them back. This is the same pattern `database/sql` uses with `driver.Driver`.
 
 ### Why is `Reset` global?
 
@@ -422,7 +422,7 @@ go test ./drivers/postgres/...
 
 ### SQLite driver used in tests
 
-The SQLite integration tests use [`modernc.org/sqlite`](https://pkg.go.dev/modernc.org/sqlite) — a pure-Go (no CGO) SQLite driver. This means the tests run out-of-the-box on Windows / macOS / Linux without requiring a C toolchain. The library itself is ORM-agnostic: production users of `dbtestkit` can choose `modernc.org/sqlite`, `mattn/go-sqlite3` (CGO), or any other SQLite driver — whatever they pass to their `WithEngineInitializer` is what gets used.
+The SQLite integration tests use [`modernc.org/sqlite`](https://pkg.go.dev/modernc.org/sqlite) — a pure-Go (no CGO) SQLite driver. This means the tests run out-of-the-box on Windows / macOS / Linux without requiring a C toolchain. The library itself is ORM-agnostic: production users of `snapdb` can choose `modernc.org/sqlite`, `mattn/go-sqlite3` (CGO), or any other SQLite driver — whatever they pass to their `WithEngineInitializer` is what gets used.
 
 ---
 

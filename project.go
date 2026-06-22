@@ -1,4 +1,4 @@
-// Package dbtestkit. project.go - Provides the helper that locates the project root
+// Package snapdb. project.go - Provides the helper that locates the project root
 // directory by walking up the filesystem until a go.mod file is found.
 package snapdb
 

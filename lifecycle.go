@@ -1,4 +1,4 @@
-// Package dbtestkit. lifecycle.go - Orchestrates the test lifecycle. Exposes
+// Package snapdb. lifecycle.go - Orchestrates the test lifecycle. Exposes
 // two public entry points: Run (called from TestMain) and Reset (called from
 // each test). Everything else is internal plumbing.
 //
@@ -65,16 +65,16 @@ type RunM interface {
 // configuration every caller must supply — there is no meaningful default
 // for "which database" or "how do I create your schema." Making them
 // positional means a TestMain that omits one fails to compile, instead of
-// failing on the first `go test` run with a "dbtestkit: WithXxx is
+// failing on the first `go test` run with a "snapdb: WithXxx is
 // required" string. Everything else (credentials, paths, seeders, logger,
 // cache invalidation) is genuinely optional and stays in opts.
 //
 // Example:
 //
-//	dbtestkit.Run(m, mysql.New(), tests.CasdoorSchemaInit, tests.CasdoorDataInit, tests.CasdoorEngineInit,
-//	    dbtestkit.WithDatabase(dbtestkit.DatabaseConfig{Database: "casdoor", Username: "root", Password: "casdoor"}),
-//	    dbtestkit.WithCacheInvalidator(tests.CasdoorCacheInvalidator),
-//	    dbtestkit.WithSeeders(seedFn),
+//	snapdb.Run(m, mysql.New(), tests.CasdoorSchemaInit, tests.CasdoorDataInit, tests.CasdoorEngineInit,
+//	    snapdb.WithDatabase(snapdb.DatabaseConfig{Database: "casdoor", Username: "root", Password: "casdoor"}),
+//	    snapdb.WithCacheInvalidator(tests.CasdoorCacheInvalidator),
+//	    snapdb.WithSeeders(seedFn),
 //	)
 //
 // If you already have call sites built against the old all-options form,
@@ -97,7 +97,7 @@ func Run(
 	}
 	cfg, err := applyOptions(append(required, opts...))
 	if err != nil {
-		fmt.Printf("❌ dbtestkit: invalid configuration: %v\n", err)
+		fmt.Printf("❌ snapdb: invalid configuration: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -106,7 +106,7 @@ func Run(
 
 	env, eng, drv, err := setup(ctx, cfg)
 	if err != nil {
-		fmt.Printf("❌ dbtestkit: setup failed: %v\n", err)
+		fmt.Printf("❌ snapdb: setup failed: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -123,7 +123,7 @@ func Run(
 
 	// Tear down.
 	if err := teardown(ctx, env, eng, drv); err != nil {
-		fmt.Printf("❌ dbtestkit: teardown failed: %v\n", err)
+		fmt.Printf("❌ snapdb: teardown failed: %v\n", err)
 	}
 
 	os.Exit(code)
@@ -141,7 +141,7 @@ func Reset[S stringish](t MinimalTandB, testNames ...S) error {
 	}
 
 	if runtime == nil {
-		panic("dbtestkit: Reset called before Run (did you forget to wire TestMain?)")
+		panic("snapdb: Reset called before Run (did you forget to wire TestMain?)")
 	}
 
 	// Serialize resets to prevent concurrent truncation/insertion races on

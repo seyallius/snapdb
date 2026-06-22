@@ -1,4 +1,4 @@
-// Package postgres. postgres.go - PostgreSQL backend for dbtestkit. Boots a
+// Package postgres. postgres.go - PostgreSQL backend for snapdb. Boots a
 // Postgres test container via testcontainers-go, using tmpfs for the data
 // directory and a tuned configuration for fast test execution.
 package postgres
@@ -28,28 +28,28 @@ const (
 	defaultStartupTimeout = 2 * time.Minute
 )
 
-// PostgresDriver implements dbtestkit.DatabaseDriver for PostgreSQL.
+// PostgresDriver implements snapdb.DatabaseDriver for PostgreSQL.
 type PostgresDriver struct {
 	container testcontainers.Container
-	cfg       dbtestkit.DatabaseConfig
+	cfg       snapdb.DatabaseConfig
 }
 
 // ------------------------------------------- Constructor(s) --------------------------------------- //
 
 // New returns a fresh Postgres driver instance.
 //
-// Pass the result to dbtestkit.WithDriver:
+// Pass the result to snapdb.WithDriver:
 //
-//	dbtestkit.Run(m,
-//	    dbtestkit.WithDriver(postgres.New()),
+//	snapdb.Run(m,
+//	    snapdb.WithDriver(postgres.New()),
 //	    ...
 //	)
-func New() dbtestkit.DatabaseDriver { return &PostgresDriver{} }
+func New() snapdb.DatabaseDriver { return &PostgresDriver{} }
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
-// Driver returns the dbtestkit.Driver constant this implementation serves.
-func (d *PostgresDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverPostgres }
+// Driver returns the snapdb.Driver constant this implementation serves.
+func (d *PostgresDriver) Driver() snapdb.Driver { return snapdb.DriverPostgres }
 
 // Start boots the Postgres container and returns the DSN.
 //
@@ -58,7 +58,7 @@ func (d *PostgresDriver) Driver() dbtestkit.Driver { return dbtestkit.DriverPost
 //   - a wait strategy that polls the postgres CLI until the server responds
 //   - the standard postgres initdb flow (database + user created from
 //     POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD env vars)
-func (d *PostgresDriver) Start(ctx context.Context, env *dbtestkit.Environment) (string, error) {
+func (d *PostgresDriver) Start(ctx context.Context, env *snapdb.Environment) (string, error) {
 	cfg := env.DriverConfig()
 	d.cfg = cfg
 
@@ -110,7 +110,7 @@ func (d *PostgresDriver) Start(ctx context.Context, env *dbtestkit.Environment) 
 
 // RestoreDump pipes the pristine SQL dump into psql inside the container.
 // This is the fast-path reset (~ms).
-func (d *PostgresDriver) RestoreDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *PostgresDriver) RestoreDump(ctx context.Context, env *snapdb.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("postgres: RestoreDump called before Start")
 	}
@@ -139,7 +139,7 @@ func (d *PostgresDriver) RestoreDump(ctx context.Context, env *dbtestkit.Environ
 // Uses --clean --if-exists so the dump contains DROP TABLE IF EXISTS
 // equivalents (DROP ... IF EXISTS), making restores idempotent without
 // requiring a separate TRUNCATE pass.
-func (d *PostgresDriver) GenerateDump(ctx context.Context, env *dbtestkit.Environment, dumpPath string) error {
+func (d *PostgresDriver) GenerateDump(ctx context.Context, env *snapdb.Environment, dumpPath string) error {
 	if d.container == nil {
 		return fmt.Errorf("postgres: GenerateDump called before Start")
 	}
@@ -164,12 +164,12 @@ func (d *PostgresDriver) GenerateDump(ctx context.Context, env *dbtestkit.Enviro
 
 // Truncate is a no-op for Postgres — the pristine dump's DROP ... IF EXISTS
 // statements make truncation redundant on the fast path.
-func (d *PostgresDriver) Truncate(_ context.Context, _ *dbtestkit.Environment) error {
+func (d *PostgresDriver) Truncate(_ context.Context, _ *snapdb.Environment) error {
 	return nil
 }
 
 // Stop terminates the container.
-func (d *PostgresDriver) Stop(ctx context.Context, _ *dbtestkit.Environment) error {
+func (d *PostgresDriver) Stop(ctx context.Context, _ *snapdb.Environment) error {
 	if d.container == nil {
 		return nil
 	}
@@ -180,8 +180,8 @@ func (d *PostgresDriver) Stop(ctx context.Context, _ *dbtestkit.Environment) err
 }
 
 // ResetStrategy returns RestoreDump to utilize the fast-path CLI pipe.
-func (d *PostgresDriver) ResetStrategy() dbtestkit.ResetStrategy {
-	return dbtestkit.ResetStrategyRestoreDump
+func (d *PostgresDriver) ResetStrategy() snapdb.ResetStrategy {
+	return snapdb.ResetStrategyRestoreDump
 }
 
 // ------------------------------------------- Internal Helpers ------------------------------------- //
