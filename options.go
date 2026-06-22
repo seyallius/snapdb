@@ -88,15 +88,20 @@ func defaultConfig() *config {
 
 // -------------------------------------------- Public API ------------------------------------------ //
 
-// WithDriver supplies the database driver implementation. Required.
+// WithDriver supplies the database driver implementation.
+//
+// Deprecated: pass the driver as the second positional argument to Run
+// instead — that form is checked by the compiler, so a missing driver is a
+// build error instead of a runtime "WithDriver is required" failure. This
+// option is kept only so existing call sites continue to compile; the last
+// value set (whether by this option or by Run's positional argument) wins.
 //
 // Pass the constructor result from the desired driver subpackage:
 //
 //	import "github.com/seyallius/snapdb/drivers/mysql"
 //
-//	dbtestkit.Run(m,
-//	    dbtestkit.WithDriver(mysql.New()),
-//	    ...
+//	dbtestkit.Run(m, mysql.New(), schemaInit, dataInit, engineInit,
+//	    dbtestkit.WithDatabase(dbCfg),
 //	)
 func WithDriver(d DatabaseDriver) Option {
 	return func(c *config) error {
@@ -126,7 +131,10 @@ func WithDatabase(db DatabaseConfig) Option {
 	}
 }
 
-// WithSchemaInitializer supplies the callback that creates tables. Required.
+// WithSchemaInitializer supplies the callback that creates tables.
+//
+// Deprecated: pass it as Run's third positional argument instead; see
+// WithDriver's doc comment for why. Kept for backward compatibility.
 //
 // For xorm users this is typically engine.Sync2(&MyModel{}).
 func WithSchemaInitializer(fn SchemaInitializer) Option {
@@ -140,7 +148,10 @@ func WithSchemaInitializer(fn SchemaInitializer) Option {
 }
 
 // WithDataInitializer supplies the callback that seeds base data on the slow
-// path. Required if you want anything other than an empty schema after a reset.
+// path.
+//
+// Deprecated: pass it as Run's fourth positional argument instead. Kept for
+// backward compatibility.
 func WithDataInitializer(fn DataInitializer) Option {
 	return func(c *config) error {
 		if fn == nil {
@@ -152,7 +163,10 @@ func WithDataInitializer(fn DataInitializer) Option {
 }
 
 // WithEngineInitializer supplies the callback that builds the Engine from the
-// DSN exposed on the Environment. Required.
+// DSN exposed on the Environment.
+//
+// Deprecated: pass it as Run's fifth positional argument instead. Kept for
+// backward compatibility.
 func WithEngineInitializer(fn EngineInitializer) Option {
 	return func(c *config) error {
 		if fn == nil {

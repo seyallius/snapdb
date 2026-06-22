@@ -47,22 +47,55 @@ type MinimalTandB interface {
 // It is used to provide a common interface for any string-like types.
 type stringish interface{ ~string }
 
+// RunM is the subset of *testing.M the library needs. Defined here so the
+// core package does not need to import "testing" at compile time (other than
+// in test files).
+type RunM interface {
+	Run() int
+}
+
 // -------------------------------------------- Public API ------------------------------------------ //
 
-// Run wires up the test environment and executes the test binary.
+// Run is the entry point called from TestMain. It boots the driver, runs the
+// slow or fast setup path, executes the test suite, and tears everything
+// down. On any setup error it prints the error and calls os.Exit(1) — TestMain
+// has no other way to fail before tests run.
 //
-// It MUST be called from a TestMain function — the os.Exit at the end is what
-// TestMain expects. The options list must include at minimum:
-//   - WithDriver
-//   - WithSchemaInitializer
-//   - WithDataInitializer
-//   - WithEngineInitializer
+// driver, schemaInit, dataInit, and engineInit are the four pieces of
+// configuration every caller must supply — there is no meaningful default
+// for "which database" or "how do I create your schema." Making them
+// positional means a TestMain that omits one fails to compile, instead of
+// failing on the first `go test` run with a "dbtestkit: WithXxx is
+// required" string. Everything else (credentials, paths, seeders, logger,
+// cache invalidation) is genuinely optional and stays in opts.
 //
-// Run performs the one-time container setup (fast path if a pristine dump
-// exists, slow path otherwise), then defers to m.Run() to actually execute
-// tests. After tests finish, Run tears down the container and exits.
-func Run(m RunM, opts ...Option) {
-	cfg, err := applyOptions(opts)
+// Example:
+//
+//	dbtestkit.Run(m, mysql.New(), tests.CasdoorSchemaInit, tests.CasdoorDataInit, tests.CasdoorEngineInit,
+//	    dbtestkit.WithDatabase(dbtestkit.DatabaseConfig{Database: "casdoor", Username: "root", Password: "casdoor"}),
+//	    dbtestkit.WithCacheInvalidator(tests.CasdoorCacheInvalidator),
+//	    dbtestkit.WithSeeders(seedFn),
+//	)
+//
+// If you already have call sites built against the old all-options form,
+// they keep compiling unchanged: WithDriver / WithSchemaInitializer /
+// WithDataInitializer / WithEngineInitializer are still accepted and simply
+// overwrite the same fields (last write wins, same as any other Option).
+func Run(
+	m RunM,
+	driver DatabaseDriver,
+	schemaInit SchemaInitializer,
+	dataInit DataInitializer,
+	engineInit EngineInitializer,
+	opts ...Option,
+) {
+	required := []Option{
+		WithDriver(driver),
+		WithSchemaInitializer(schemaInit),
+		WithDataInitializer(dataInit),
+		WithEngineInitializer(engineInit),
+	}
+	cfg, err := applyOptions(append(required, opts...))
 	if err != nil {
 		fmt.Printf("❌ dbtestkit: invalid configuration: %v\n", err)
 		os.Exit(1)
@@ -94,13 +127,6 @@ func Run(m RunM, opts ...Option) {
 	}
 
 	os.Exit(code)
-}
-
-// RunM is the subset of *testing.M the library needs. Defined here so the
-// core package does not need to import "testing" at compile time (other than
-// in test files).
-type RunM interface {
-	Run() int
 }
 
 // Reset restores the database to its pristine state and runs any custom
