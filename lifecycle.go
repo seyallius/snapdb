@@ -166,7 +166,15 @@ func setup(ctx context.Context, cfg *config) (*Environment, Engine, DatabaseDriv
 	logStep(cfg, "Start Container", stepStart)
 
 	// 3. Decide fast vs slow path.
-	useFastPath := !cfg.generatePristine && fileExists(cfg.pristineDumpPath)
+	//
+	// Drivers that declare ResetStrategyTruncateAndSeed (e.g. SQLite) never
+	// want snapshot/restore semantics, even if a stale snapshot file from a
+	// previous run happens to exist on disk — RestoreDump for such drivers
+	// can produce a corrupt working file (e.g. SQLite WAL checkpoint races,
+	// see GenerateDump's doc comment). Only consult fileExists for drivers
+	// that actually use ResetStrategyRestoreDump.
+	wantsSnapshot := cfg.driverImpl.ResetStrategy() != ResetStrategyTruncateAndSeed
+	useFastPath := wantsSnapshot && !cfg.generatePristine && fileExists(cfg.pristineDumpPath)
 
 	if useFastPath {
 		// FAST PATH: restore the existing pristine dump, then construct engine.
@@ -189,11 +197,18 @@ func setup(ctx context.Context, cfg *config) (*Environment, Engine, DatabaseDriv
 		}
 		logStep(cfg, "Initialize Data (Slow Path)", stepStart)
 
-		stepStart = time.Now()
-		if err := cfg.driverImpl.GenerateDump(ctx, env, cfg.pristineDumpPath); err != nil {
-			return nil, nil, nil, fmt.Errorf("slow path: generate dump: %w", err)
+		// Only generate a snapshot for drivers that will actually consume
+		// one on reset. TruncateAndSeed drivers reset via Truncate(), so a
+		// snapshot file would be dead weight at best, and at worst (as with
+		// SQLite + WAL) a source of corruption on a later restore.
+		if wantsSnapshot {
+			stepStart = time.Now()
+			if err = cfg.driverImpl.GenerateDump(ctx, env, cfg.pristineDumpPath); err != nil {
+				return nil, nil, nil, fmt.Errorf("slow path: generate dump: %w", err)
+			}
+			logStep(cfg, "Generate & Save Pristine Dump", stepStart)
 		}
-		logStep(cfg, "Generate & Save Pristine Dump", stepStart)
+
 	}
 
 	// 4. Construct the user's engine.
@@ -296,10 +311,6 @@ func resetDatabase(_ MinimalTandB, rt *runtimeState, testNames ...string) error 
 		}
 		logStep(cfg, "Restore Pristine State", stepStart)
 	}
-	if err := drv.RestoreDump(runtimeEnv.Context(), runtimeEnv, cfg.pristineDumpPath); err != nil {
-		return fmt.Errorf("restore dump: %w", err)
-	}
-	logStep(cfg, "Restore Pristine State", stepStart)
 
 	// 4. Run custom seeders.
 	if len(cfg.seeders) > 0 {
