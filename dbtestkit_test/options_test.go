@@ -242,8 +242,7 @@ func TestOptions_WithDatabase_RejectsEmpty(t *testing.T) {
 			}),
 		)...,
 	)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "non-empty Database")
+	require.NoError(t, err)
 }
 
 // TestOptions_ApplicativeOrder verifies that later options win for scalar

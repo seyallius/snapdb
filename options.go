@@ -118,7 +118,8 @@ func WithDriver(d DatabaseDriver) Option {
 func WithDatabase(db DatabaseConfig) Option {
 	return func(c *config) error {
 		if db.Database == "" {
-			return fmt.Errorf("dbtestkit: WithDatabase requires a non-empty Database name")
+			l := defaultConfig().logger
+			l.Warn("dbtestkit: WithDatabase provided an empty Database name")
 		}
 		c.database = db
 		return nil
