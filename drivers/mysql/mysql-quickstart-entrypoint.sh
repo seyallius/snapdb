@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # mysql-quickstart-entrypoint.sh - Optimized MySQL entrypoint for snapdb.
 #
 # If /var/lib/mysql is empty (fresh tmpfs), extract a pre-baked empty database
@@ -12,6 +13,7 @@ if [ -z "$(ls -A /var/lib/mysql 2>/dev/null)" ] && [ -f /tmp/empty-mysql.tar.gz 
   chown -R mysql:mysql /var/lib/mysql/
 fi
 
+# Hand over to the official MySQL entrypoint with optimized settings for testing
 exec docker-entrypoint.sh mysqld \
   --innodb-buffer-pool-size=16M \
   --skip-performance-schema \
