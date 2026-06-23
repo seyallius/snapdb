@@ -60,8 +60,13 @@ func waitForMySQL(_ context.Context, timeout time.Duration, cfg snapdb.DatabaseC
 	_ = urlFunc
 
 	// Log-based wait is faster and quieter than ForSQL polling.
-	return wait.
-		ForLog("ready for connections").
-		WithStartupTimeout(timeout).
-		WithOccurrence(2) // 1 = init, 2 = main mysqld
+	return wait.ForAll(
+		wait.
+			ForLog("ready for connections").
+			WithStartupTimeout(timeout).
+			WithOccurrence(1), // Single occurrence: quickstart skips the temporary initdb mysqld
+		wait.
+			ForListeningPort(defaultPort).
+			WithStartupTimeout(timeout), // Guards against slow-path fallback where temporary mysqld logs ready but has no TCP socket
+	)
 }
