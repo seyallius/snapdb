@@ -30,6 +30,7 @@ Thumbs.db
 # Others
 .idea
 .git
+.gitignore
 
 # ==================== Imported Patterns ====================
 
