@@ -8,11 +8,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/seyallius/snapdb"
 	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
@@ -43,6 +45,51 @@ func copyFileFromContainer(ctx context.Context, ctr testcontainers.Container, co
 
 	if _, err = io.Copy(file, reader); err != nil {
 		return fmt.Errorf("failed to write to host file: %w", err)
+	}
+	return nil
+}
+
+// bakeEmptyTarball spins up a temporary MySQL container, lets it complete its
+// normal initdb sequence, tars up the resulting /var/lib/mysql directory, and
+// saves it to the testdata directory for future fast-path startups.
+func bakeEmptyTarball(ctx context.Context, env *snapdb.Environment, cfg snapdb.DatabaseConfig) error {
+	startupTimeout := cfg.StartupTimeout
+	if startupTimeout == 0 {
+		startupTimeout = defaultStartupTimeout
+	}
+
+	baker, err := mysql.Run(
+		ctx,
+		cfg.Image,
+		mysql.WithDatabase(cfg.Database),
+		mysql.WithUsername(cfg.Username),
+		mysql.WithPassword(cfg.Password),
+		testcontainers.WithWaitStrategy(waitForMySQL(ctx, startupTimeout, cfg)),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to start baker container: %w", err)
+	}
+	defer baker.Terminate(ctx)
+
+	// Create the tarball inside the container
+	cmd := []string{"sh", "-c", "tar cf - -C /var/lib/mysql . | gzip --fast > /tmp/empty-mysql.tar.gz"}
+	code, reader, err := baker.Exec(ctx, cmd)
+	if err != nil {
+		return fmt.Errorf("failed to exec tar in baker: %w", err)
+	}
+	if code != 0 {
+		errBytes, _ := readAll(reader)
+		return fmt.Errorf("tar failed (exit %d): %s", code, string(errBytes))
+	}
+
+	// Copy the tarball out to the host
+	tarballPath := filepath.Join(env.TestdataDir(), quickstartTarballName)
+	if err = os.MkdirAll(env.TestdataDir(), 0o755); err != nil {
+		return fmt.Errorf("failed to create testdata dir: %w", err)
+	}
+
+	if err = copyFileFromContainer(ctx, baker, "/tmp/empty-mysql.tar.gz", tarballPath); err != nil {
+		return fmt.Errorf("failed to save tarball to host: %w", err)
 	}
 	return nil
 }

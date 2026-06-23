@@ -105,9 +105,34 @@ func (d *MySQLDriver) Start(ctx context.Context, env *snapdb.Environment) (strin
 			ContainerFilePath: "/tmp/" + quickstartTarballName,
 			FileMode:          0o644,
 		})
-	} else if !os.IsNotExist(err) {
+
+	} else if os.IsNotExist(err) {
+		// 🍰 AUTO-BAKE: The tarball is missing. Spin up a temporary "baker"
+		// container, let it run the slow initdb phase, tar the resulting
+		// /var/lib/mysql, and save it for all future runs.
+
+		bakeStart := time.Now()
+		if err = bakeEmptyTarball(ctx, env, cfg); err != nil {
+			if env.Logger() != nil {
+				env.Logger().Warn(fmt.Sprintf("failed to auto-bake empty tarball, falling back to slow initdb: %v", err))
+			}
+		} else {
+			if env.Logger() != nil {
+				env.Logger().Step("Bake Empty MySQL Tarball", time.Since(bakeStart))
+			}
+
+			// Baking succeeded, mount the newly created tarball
+			files = append(files, testcontainers.ContainerFile{
+				HostFilePath:      filepath.Join(env.TestdataDir(), quickstartTarballName),
+				ContainerFilePath: "/tmp/" + quickstartTarballName,
+				FileMode:          0o644,
+			})
+		}
+
+	} else {
 		return "", fmt.Errorf("mysql: failed to stage tarball: %w", err)
 	}
+
 	// If the tarball doesn't exist yet, the entrypoint gracefully falls
 	// back to the official mysql initdb flow. The user can generate it
 	// later by running the generate-empty-tarball.sh helper.
