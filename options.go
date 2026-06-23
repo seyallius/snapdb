@@ -8,6 +8,7 @@ package snapdb
 
 import (
 	"fmt"
+	"path/filepath"
 	"time"
 )
 
@@ -221,11 +222,20 @@ func WithPristineDumpPath(path string) Option {
 // WithTestdataDir overrides the testdata directory used to store auxiliary
 // files (pristine dumps, pre-baked container tarballs, etc.).
 //
+// If projectRoot is set via WithProjectRoot(), the provided dir is resolved
+// relative to the project root using filepath.Join(). Otherwise, projectRoot
+// is calculated using os.Getwd() and looking back dirs until go.mod is found.
+//
+// This ensures consistent behavior regardless of the current working directory.
+//
 // Defaults to <projectRoot>/testdata.
 func WithTestdataDir(dir string) Option {
 	return func(c *config) error {
 		if dir == "" {
 			return fmt.Errorf("snapdb: WithTestdataDir requires a non-empty path")
+		}
+		if c.projectRoot != "" {
+			dir = filepath.Join(c.projectRoot, dir)
 		}
 		c.testdataDir = dir
 		return nil
@@ -359,6 +369,7 @@ func (c *config) validate() error {
 	}
 
 	// Resolve testdata dir if not explicitly set.
+	c.testdataDir = filepath.Join(c.projectRoot, c.testdataDir)
 	if c.testdataDir == "" {
 		c.testdataDir = c.projectRoot + "/testdata"
 	}
