@@ -1,6 +1,6 @@
 module github.com/seyallius/snapdb
 
-go 1.26.4
+go 1.25.0
 
 require (
 	github.com/docker/go-connections v0.7.0
