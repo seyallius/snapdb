@@ -21,7 +21,7 @@ That's basically the whole pitch. Everything else in this README is detail.
 
 ## Why this exists
 
-This started as test infrastructure buried inside [Casdoor](https://github.com/casdoor/casdoor) — good code, but tangled up with Casdoor's own globals, config files, and Xorm engine. We pulled the *pattern* out (boot once, snapshot, restore fast) and rebuilt it as a standalone library with zero opinions about your ORM, your schema, or your domain objects.
+This started as test infrastructure buried inside [Casdoor](https://github.com/casdoor/casdoor) — good code, but tangled up with Casdoor's own globals, config files, and Xorm engine (I had cloned casdoor and was working on something and eventually had developed a really fine integration testing framework. Didn't asked for PR though...). We pulled the *pattern* out (boot once, snapshot, restore fast) and rebuilt it as a standalone library with zero opinions about your ORM, your schema, or your domain objects.
 
 So `snapdb` doesn't know what xorm is. It doesn't know what gorm is. It has no idea what your `User` struct looks like. All it knows is: here's a database, here's a snapshot of it, restore the snapshot when asked. You bring the rest via small callback functions.
 
