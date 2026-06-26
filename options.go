@@ -298,7 +298,9 @@ func applyOptions(opts []Option) (*config, error) {
 	c := defaultConfig()
 	for i, opt := range opts {
 		if opt == nil {
-			return nil, fmt.Errorf("snapdb: option at index %d is nil", i)
+			//fixme(logger): should use what is logger configured (the `WithLogger`)
+			NewDefaultLogger(nil).Warn(fmt.Sprintf("snapdb: option at index %d is nil", i))
+			continue
 		}
 		if err := opt(c); err != nil {
 			return nil, err
