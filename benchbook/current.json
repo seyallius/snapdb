@@ -1,0 +1,79 @@
+{
+  "benchmarks": [
+    {
+      "id": "github.com/seyallius/snapdb/snapdb_test.BenchmarkApplyOptions",
+      "name": "BenchmarkApplyOptions",
+      "package": "github.com/seyallius/snapdb/snapdb_test",
+      "samples": [
+        {
+          "allocs_op": 11,
+          "bytes_op": 1632017,
+          "extra": {},
+          "iterations": 10000,
+          "ns_op": 1164202
+        },
+        {
+          "allocs_op": 11,
+          "bytes_op": 1632014,
+          "extra": {},
+          "iterations": 10000,
+          "ns_op": 1296179
+        },
+        {
+          "allocs_op": 11,
+          "bytes_op": 1632008,
+          "extra": {},
+          "iterations": 10000,
+          "ns_op": 1221422
+        },
+        {
+          "allocs_op": 11,
+          "bytes_op": 1632012,
+          "extra": {},
+          "iterations": 10000,
+          "ns_op": 1310479
+        },
+        {
+          "allocs_op": 11,
+          "bytes_op": 1632009,
+          "extra": {},
+          "iterations": 10000,
+          "ns_op": 1328646
+        },
+        {
+          "allocs_op": 11,
+          "bytes_op": 1632009,
+          "extra": {},
+          "iterations": 10000,
+          "ns_op": 1316927
+        }
+      ],
+      "variant": "default",
+      "workload": "ApplyOptions"
+    }
+  ],
+  "content_hash": "32f3a497befebd5ff7f49e0195a300c7cfe368528c29bbfd42146625a8611f49",
+  "created_at": "2026-11-07T14:24:08Z",
+  "forced": false,
+  "id": "",
+  "indicative_only": false,
+  "label": "",
+  "note": "",
+  "profiles": [],
+  "provenance": {
+    "bench_args": "-run '^$' -bench=. -benchmem -count=6",
+    "cpu_cores": 20,
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 265K",
+    "git_branch": "docs/benchbook-site",
+    "git_dirty": true,
+    "git_sha": "140b72300229642e43eba9c681b054044b686a14",
+    "go_version": "go1.26.6",
+    "goarch": "amd64",
+    "goos": "linux",
+    "hardware_fingerprint": "e37081e2bdb4e7e5c26ffdc63009f0443742ee6de341be07fa234673838898c0",
+    "hostname": "",
+    "memory_bytes": 32213762048
+  },
+  "schema_version": 1,
+  "seq": 0
+}

@@ -97,20 +97,22 @@ func TestUserSignup(t *testing.T) {
 
 Those first four arguments to `Run` — the driver, schema setup, data seeding, and engine construction — are the only things `snapdb` truly can't guess for you, so they're plain function arguments rather than options. Forget one and your code won't compile, instead of failing on the first `go test` run.
 
-Everything else (credentials, custom seeders, logging, where files get written) is optional and layered on as `With...` options after those four. The [quickstart guide](docs/quickstart.md) walks through a fuller example, including SQLite (no Docker needed).
+Everything else (credentials, custom seeders, logging, where files get written) is optional and layered on as `With...` options after those four. The [quickstart guide](docs/content/quickstart.md) walks through a fuller example, including SQLite (no Docker needed).
 
 ---
 
 ## Documentation
 
-This README is the "what and why." For the "how," head into [`/docs`](docs/):
+This README is the "what and why." For the "how," head into [`/docs/content`](docs/content/), or browse the same pages as a generated site at **https://seyallius.github.io/snapdb/** (once GitHub Pages is pointed at `docs/` — see below):
 
-- **[Quickstart](docs/quickstart.md)** — get a test suite running in a few minutes, MySQL or SQLite.
-- **[Configuration reference](docs/configuration.md)** — every option, every default, in one table.
-- **[Drivers](docs/drivers.md)** — what each backend actually does under the hood, and how to write your own.
-- **[The Engine & Environment types](docs/engine-and-environment.md)** — the two interfaces you'll actually touch.
-- **[Caching & reset correctness](docs/caching.md)** — the genuinely tricky part of test isolation, and how `snapdb` handles it.
-- **[Design notes & FAQ](docs/design-notes.md)** — the "why did you do it this way" answers.
+- **[Quickstart](docs/content/quickstart.md)** — get a test suite running in a few minutes, MySQL or SQLite.
+- **[Configuration reference](docs/content/configuration.md)** — every option, every default, in one table.
+- **[Drivers](docs/content/drivers.md)** — what each backend actually does under the hood, and how to write your own.
+- **[The Engine & Environment types](docs/content/engine-and-environment.md)** — the two interfaces you'll actually touch.
+- **[Caching & reset correctness](docs/content/caching.md)** — the genuinely tricky part of test isolation, and how `snapdb` handles it.
+- **[Design notes & FAQ](docs/content/design-notes.md)** — the "why did you do it this way" answers.
+
+The `docs/` folder itself is a generated static site (built with [benchbook](https://github.com/seyallius/benchbook), which also happens to track this library's own microbenchmarks). The pages above are its authored content — edit them directly and regenerate the site with `just docs` (or `benchbook build`); nothing else in `docs/` should be hand-edited. Enable it by setting **Settings → Pages → Deploy from a branch → `main` / `docs`**.
 
 ---
 
