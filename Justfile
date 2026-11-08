@@ -125,18 +125,21 @@ mod-update:
 # Docs
 # ----------------------------------------------------------------
 
-# Generate navigation HTML for documentation markdown files
+# Rebuild the docs/ site (benchbook.toml) from docs/content/*.md and the latest benchmark run.
+# Requires: go install github.com/seyallius/benchbook/cmd/benchbook@latest
 [group('Docs')]
-generate-nav:
-    @echo "🔄 Generating documentation navigation..."
-    @go run scripts/generate-nav.go
-    @echo "✨ Navigation updated! Commit the changes."
+docs:
+    benchbook build
 
-# Check if navigation HTML needs to be updated
+# Serve the generated docs/ site locally at http://localhost:8000
 [group('Docs')]
-check-nav: generate-nav
-    @git diff --exit-code docs/*.md || (echo "❌ Navigation changes detected. Run 'just generate-nav' and commit." && exit 1)
-    @echo "✅ Documentation navigation is up to date."
+docs-serve:
+    benchbook serve
+
+# Record a fresh benchmark run and rebuild the docs/ site
+[group('Docs')]
+docs-run:
+    benchbook run
 
 # ----------------------------------------------------------------
 # Git & Version Control

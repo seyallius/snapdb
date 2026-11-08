@@ -1,0 +1,56 @@
+{
+  "generated_by": "benchbook 0.1.0 (schema 1)",
+  "metrics": {
+    "B/s": "B/s",
+    "GB/s": "GB/s",
+    "GiB/s": "GiB/s",
+    "MB/s": "MB/s",
+    "MiB/s": "MiB/s",
+    "allocs_op": "allocs/op",
+    "bytes_op": "B/op",
+    "item/s": "item/s",
+    "items/s": "items/s",
+    "kB/s": "kB/s",
+    "ns_op": "ns/op",
+    "op/s": "op/s",
+    "ops/s": "ops/s",
+    "req/s": "req/s",
+    "reqs/s": "reqs/s"
+  },
+  "options": {
+    "alpha": 0.05,
+    "min_effect_pct": 1,
+    "min_samples": 6
+  },
+  "runs": [
+    {
+      "badges": [],
+      "date": "2026-11-08",
+      "file": "data/m001.json",
+      "headline": {},
+      "id": "m001",
+      "is_current": false,
+      "label": "baseline",
+      "seq": 1,
+      "sha": "9ff27ab",
+      "title": "m001 · baseline"
+    },
+    {
+      "badges": [],
+      "date": "2026-11-08",
+      "file": "data/current.json",
+      "headline": {
+        "allocs_op": 0,
+        "bytes_op": 0,
+        "ns_op": 0
+      },
+      "id": "current",
+      "is_current": true,
+      "label": "",
+      "seq": 0,
+      "sha": "9ff27ab",
+      "title": "current"
+    }
+  ],
+  "schema_version": 1
+}

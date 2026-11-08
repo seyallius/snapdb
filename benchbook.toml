@@ -1,0 +1,60 @@
+# benchbook.toml - configuration for the benchbook benchmark documentation tool.
+# Everything here is optional except [project].name; defaults are shown commented out.
+
+[project]
+name     = "snapdb"
+emoji    = "📸"
+repo_url = "https://github.com/seyallius/snapdb"
+
+[paths]
+# data_dir = "benchbook"                   # current.json + history/ (commit this)
+# site_dir = "docs"                        # generated documentation site
+# raw_dir  = "benchbook/raw"               # raw go test / pprof output (add to .gitignore)
+
+[bench]
+packages = ["./snapdb_test"]               # the only package with a Benchmark today
+# args             = ["-benchmem"]         # "go test -run '^$' -bench=." is always added
+count    = 6                               # the sample floor; this isn't the point of the site
+# timeout          = "30m"
+# baseline_variant = "traditional"         # variant others are compared against
+
+[stats]
+# alpha            = 0.05
+# min_effect_pct   = 1.0
+# min_samples      = 6
+# noise_floor_note = true
+
+[category_default]
+title = "⚡ Basic Operations"
+
+[tracked]
+benchmarks = ["ApplyOptions"]
+
+[profile]
+# package = "./internal/core"
+# top     = 20
+# kinds   = ["cpu", "mem_space", "mem_objects"]
+
+[site]
+title = "snapdb documentation"
+# default_theme     = "light"
+# theme_storage_key = "benchbook-theme"
+# highlight_langs   = ["go", "bash", "toml"]
+# loading_text      = "Loading documentation... (๑•̀ㅂ•́)و✧"
+# not_found_text    = "Looks like this page wandered off... (╥_╥)"
+
+# Authored navigation: the real docs (also committed to git as plain markdown under
+# docs/content/, readable straight on GitHub). Generated pages (benchmarks, profiling,
+# timeline, compare) are merged into a "Performance" section automatically — incidental
+# to this site, not its point.
+[[nav]]
+section = "Guide"
+pages = [
+  { title = "Home", path = "content/home.md" },
+  { title = "Quickstart", path = "content/quickstart.md" },
+  { title = "Configuration", path = "content/configuration.md" },
+  { title = "Drivers", path = "content/drivers.md" },
+  { title = "Engine & Environment", path = "content/engine-and-environment.md" },
+  { title = "Caching & Reset Correctness", path = "content/caching.md" },
+  { title = "Design Notes & FAQ", path = "content/design-notes.md" },
+]

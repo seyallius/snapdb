@@ -35,3 +35,6 @@ treeclip_*.*
 *_clip.txt
 *_clip.md
 bin
+
+# benchbook raw tool output (regenerable, large)
+/benchbook/raw/

@@ -1,0 +1,123 @@
+{
+  "data": {
+    "index": "data/index.json",
+    "runs_dir": "data/"
+  },
+  "default_path": "content/benchmarks.md",
+  "favicon": "data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Ctext%20x=%2250%25%22%20y=%2250%25%22%20font-size=%2252%22%20text-anchor=%22middle%22%20dominant-baseline=%22central%22%3E📸%3C/text%3E%3C/svg%3E",
+  "generated_by": "benchbook 0.1.0 (schema 1)",
+  "metrics": {
+    "B/s": "B/s",
+    "GB/s": "GB/s",
+    "GiB/s": "GiB/s",
+    "MB/s": "MB/s",
+    "MiB/s": "MiB/s",
+    "allocs_op": "allocs/op",
+    "bytes_op": "B/op",
+    "item/s": "item/s",
+    "items/s": "items/s",
+    "kB/s": "kB/s",
+    "ns_op": "ns/op",
+    "op/s": "op/s",
+    "ops/s": "ops/s",
+    "req/s": "req/s",
+    "reqs/s": "reqs/s"
+  },
+  "nav": [
+    {
+      "collapsible": false,
+      "expanded": true,
+      "pages": [
+        {
+          "path": "content/home.md",
+          "title": "Home"
+        },
+        {
+          "path": "content/quickstart.md",
+          "title": "Quickstart"
+        },
+        {
+          "path": "content/configuration.md",
+          "title": "Configuration"
+        },
+        {
+          "path": "content/drivers.md",
+          "title": "Drivers"
+        },
+        {
+          "path": "content/engine-and-environment.md",
+          "title": "Engine \u0026 Environment"
+        },
+        {
+          "path": "content/caching.md",
+          "title": "Caching \u0026 Reset Correctness"
+        },
+        {
+          "path": "content/design-notes.md",
+          "title": "Design Notes \u0026 FAQ"
+        }
+      ],
+      "section": "Guide"
+    },
+    {
+      "collapsible": false,
+      "expanded": true,
+      "pages": [
+        {
+          "path": "content/benchmarks.md",
+          "title": "Benchmarks"
+        },
+        {
+          "path": "content/profiling.md",
+          "title": "Profiling"
+        },
+        {
+          "path": "content/timeline.md",
+          "title": "Timeline"
+        },
+        {
+          "path": "content/compare.md",
+          "title": "Compare"
+        }
+      ],
+      "section": "Performance"
+    },
+    {
+      "collapsible": true,
+      "expanded": false,
+      "pages": [
+        {
+          "path": "content/milestones/m001.md",
+          "title": "m001 · baseline"
+        }
+      ],
+      "section": "Milestones"
+    }
+  ],
+  "options": {
+    "alpha": 0.05,
+    "min_effect_pct": 1,
+    "min_samples": 6
+  },
+  "project": {
+    "emoji": "📸",
+    "name": "snapdb",
+    "repo_url": "https://github.com/seyallius/snapdb"
+  },
+  "schema_version": 1,
+  "site": {
+    "default_theme": "light",
+    "extra_css": "",
+    "highlight_langs": [
+      "go",
+      "bash",
+      "toml",
+      "json",
+      "diff"
+    ],
+    "loading_text": "Loading documentation... (๑•̀ㅂ•́)و✧",
+    "not_found_text": "Looks like this page wandered off... (╥_╥)",
+    "theme_storage_key": "benchbook-theme",
+    "title": "snapdb documentation"
+  }
+}
