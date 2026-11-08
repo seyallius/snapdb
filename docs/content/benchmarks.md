@@ -2,12 +2,13 @@
 
 # Benchmarks — current run
 
-_2026-11-07_
+_2026-11-08 · compared with m001_
 
 ### How to read this
 
 - Values are medians over 6 samples; `±x%` is the half-range divided by the median.
 - Lower is better for `ns/op`, `B/op` and `allocs/op`. Throughput metrics such as `MB/s` are the exception and are marked `↑`.
+- `vs last milestone` is a two-sided Mann-Whitney U test at α = 0.05 plus a minimum effect of 1.0%: a change is only labelled when it is both significant and large enough to matter.
 - Fewer than 4 samples per side can never reach significance, so those cells read `⚠ few samples` instead of inventing a percentage.
 - A laptop is not a quiet machine: keep at least 6 samples per benchmark before promoting a milestone.
 
@@ -15,9 +16,9 @@ _2026-11-07_
 
 ### ApplyOptions
 
-| Variant | Iterations | ns/op (median ±spread) | B/op | allocs/op |
-| --- | --- | --- | --- | --- |
-| ApplyOptions | 10000 | 1.3 ms ±6.3% | 1632010 B ±0.0% | 11 allocs ±0.0% |
+| Variant | Iterations | ns/op (median ±spread) | B/op | allocs/op | vs last milestone |
+| --- | --- | --- | --- | --- | --- |
+| ApplyOptions | 10000 | 1.19 ms ±3.1% | 1632012 B ±1.2% | 11 allocs ±0.0% | ~ |
 
 ## Hardware & toolchain
 
@@ -30,6 +31,6 @@ _2026-11-07_
 | Memory | 30 GB |
 | Hardware fingerprint | `e37081e2bdb4e7e5c26ffdc63009f0443742ee6de341be07fa234673838898c0` |
 | Benchmark flags | `-run '^$' -bench=. -benchmem -count=6` |
-| Git commit | `140b7230` |
+| Git commit | `9ff27ab7` |
 | Git branch | docs/benchbook-site |
-| Working tree | dirty ⚠ |
+| Working tree | clean |

@@ -7,53 +7,53 @@
       "samples": [
         {
           "allocs_op": 11,
-          "bytes_op": 1632017,
+          "bytes_op": 1632015,
           "extra": {},
           "iterations": 10000,
-          "ns_op": 1164202
+          "ns_op": 1231468
         },
         {
           "allocs_op": 11,
-          "bytes_op": 1632014,
+          "bytes_op": 1592003,
           "extra": {},
           "iterations": 10000,
-          "ns_op": 1296179
+          "ns_op": 1185737
         },
         {
           "allocs_op": 11,
-          "bytes_op": 1632008,
+          "bytes_op": 1632013,
           "extra": {},
           "iterations": 10000,
-          "ns_op": 1221422
+          "ns_op": 1207034
+        },
+        {
+          "allocs_op": 11,
+          "bytes_op": 1592000,
+          "extra": {},
+          "iterations": 10000,
+          "ns_op": 1158589
         },
         {
           "allocs_op": 11,
           "bytes_op": 1632012,
           "extra": {},
           "iterations": 10000,
-          "ns_op": 1310479
+          "ns_op": 1202032
         },
         {
           "allocs_op": 11,
-          "bytes_op": 1632009,
+          "bytes_op": 1632012,
           "extra": {},
           "iterations": 10000,
-          "ns_op": 1328646
-        },
-        {
-          "allocs_op": 11,
-          "bytes_op": 1632009,
-          "extra": {},
-          "iterations": 10000,
-          "ns_op": 1316927
+          "ns_op": 1184703
         }
       ],
       "variant": "default",
       "workload": "ApplyOptions"
     }
   ],
-  "content_hash": "32f3a497befebd5ff7f49e0195a300c7cfe368528c29bbfd42146625a8611f49",
-  "created_at": "2026-11-07T14:24:08Z",
+  "content_hash": "a1caf4a27e63604863a1d2a9ab7708bbc81b016bf446fab2d3ef57984b52be7c",
+  "created_at": "2026-11-08T04:57:11Z",
   "forced": false,
   "id": "",
   "indicative_only": false,
@@ -65,8 +65,8 @@
     "cpu_cores": 20,
     "cpu_model": "Intel(R) Core(TM) Ultra 7 265K",
     "git_branch": "docs/benchbook-site",
-    "git_dirty": true,
-    "git_sha": "140b72300229642e43eba9c681b054044b686a14",
+    "git_dirty": false,
+    "git_sha": "9ff27ab7b5399f57ae9e5c673ab1316c1821839f",
     "go_version": "go1.26.6",
     "goarch": "amd64",
     "goos": "linux",

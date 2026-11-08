@@ -85,7 +85,12 @@
     {
       "collapsible": true,
       "expanded": false,
-      "pages": [],
+      "pages": [
+        {
+          "path": "content/milestones/m001.md",
+          "title": "m001 · baseline"
+        }
+      ],
       "section": "Milestones"
     }
   ],

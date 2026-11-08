@@ -15,6 +15,6 @@ No profiles recorded for this run. Capture them with `benchbook profile`.
 | Memory | 30 GB |
 | Hardware fingerprint | `e37081e2bdb4e7e5c26ffdc63009f0443742ee6de341be07fa234673838898c0` |
 | Benchmark flags | `-run '^$' -bench=. -benchmem -count=6` |
-| Git commit | `140b7230` |
+| Git commit | `9ff27ab7` |
 | Git branch | docs/benchbook-site |
-| Working tree | dirty ⚠ |
+| Working tree | clean |
